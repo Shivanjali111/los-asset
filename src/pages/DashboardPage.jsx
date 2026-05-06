@@ -37,109 +37,64 @@ const emptyLeadForm = {
 };
 
 const channelData = [
-  { label: "Website", value: "34%", width: "74%", icon: "⌁" },
-  { label: "Mobile App", value: "26%", width: "58%", icon: "▣" },
-  { label: "Branch Walk-in", value: "18%", width: "42%", icon: "⌂" },
-  { label: "Referral", value: "12%", width: "31%", icon: "↗" },
-  { label: "Aggregator", value: "10%", width: "26%", icon: "◆" },
+  { label: "Website",       value: "34%", width: "74%", icon: "⌁" },
+  { label: "Mobile App",    value: "26%", width: "58%", icon: "▣" },
+  { label: "Branch Walk-in",value: "18%", width: "42%", icon: "⌂" },
+  { label: "Referral",      value: "12%", width: "31%", icon: "↗" },
+  { label: "Aggregator",    value: "10%", width: "26%", icon: "◆" },
 ];
 
 const funnelData = [
-  { label: "Lead Captured", value: 186, icon: "01" },
-  { label: "Application In Progress", value: 74, icon: "02" },
-  { label: "Document Collection", value: 39, icon: "03" },
-  { label: "Verification Review", value: 31, icon: "04" },
-  { label: "Credit Review", value: 22, icon: "05" },
-  { label: "APS Generated", value: 16, icon: "06" },
+  { label: "Lead Captured",          value: 186, icon: "01" },
+  { label: "Application In Progress",value: 74,  icon: "02" },
+  { label: "Document Collection",    value: 39,  icon: "03" },
+  { label: "Verification Review",    value: 31,  icon: "04" },
+  { label: "Credit Review",          value: 22,  icon: "05" },
+  { label: "APS Generated",          value: 16,  icon: "06" },
 ];
 
 const verificationQueue = [
-  {
-    applicant: "Aarav Sharma",
-    lead: "LD-10017",
-    check: "PAN Verification",
-    status: "Pending",
-  },
-  {
-    applicant: "Neha Mehta",
-    lead: "LD-10012",
-    check: "Mobile OTP",
-    status: "Completed",
-  },
-  {
-    applicant: "Rohan Iyer",
-    lead: "LD-10008",
-    check: "Passport OCR",
-    status: "Review",
-  },
+  { applicant: "Aarav Sharma", lead: "LD-10017", check: "PAN Verification", status: "Pending"   },
+  { applicant: "Neha Mehta",   lead: "LD-10012", check: "Mobile OTP",       status: "Completed" },
+  { applicant: "Rohan Iyer",   lead: "LD-10008", check: "Passport OCR",     status: "Review"    },
 ];
 
 const creditQueue = [
-  {
-    application: "APP-24091",
-    customer: "Karan Malhotra",
-    stage: "Credit Review",
-    aging: "2 Days",
-  },
-  {
-    application: "APP-24084",
-    customer: "Priya Nair",
-    stage: "Sent Back",
-    aging: "4 Days",
-  },
-  {
-    application: "APP-24079",
-    customer: "Vivek Rao",
-    stage: "APS Pending",
-    aging: "1 Day",
-  },
+  { application: "APP-24091", customer: "Karan Malhotra", stage: "Credit Review", aging: "2 Days" },
+  { application: "APP-24084", customer: "Priya Nair",     stage: "Sent Back",     aging: "4 Days" },
+  { application: "APP-24079", customer: "Vivek Rao",      stage: "APS Pending",   aging: "1 Day"  },
 ];
 
 const documentExceptions = [
-  {
-    lead: "LD-10015",
-    document: "Income Proof",
-    issue: "Document missing",
-    severity: "High",
-  },
-  {
-    lead: "LD-10011",
-    document: "PAN Card",
-    issue: "Name mismatch",
-    severity: "Medium",
-  },
-  {
-    lead: "LD-10006",
-    document: "Bank Statement",
-    issue: "Re-upload required",
-    severity: "Low",
-  },
+  { lead: "LD-10015", document: "Income Proof",  issue: "Document missing",    severity: "High"   },
+  { lead: "LD-10011", document: "PAN Card",       issue: "Name mismatch",       severity: "Medium" },
+  { lead: "LD-10006", document: "Bank Statement", issue: "Re-upload required",  severity: "Low"    },
 ];
 
 const activityData = [
   {
-    title: "PAN verification completed",
+    title:    "PAN verification completed",
     subtitle: "Applicant identity check completed for LD-10018.",
-    time: "12 min ago",
-    icon: "✓",
+    time:     "12 min ago",
+    icon:     "✓",
   },
   {
-    title: "Application sent back for rework",
+    title:    "Application sent back for rework",
     subtitle: "Income proof missing for credit review.",
-    time: "38 min ago",
-    icon: "↩",
+    time:     "38 min ago",
+    icon:     "↩",
   },
   {
-    title: "New digital lead assigned",
+    title:    "New digital lead assigned",
     subtitle: "Website lead routed to Sales User.",
-    time: "1 hr ago",
-    icon: "+",
+    time:     "1 hr ago",
+    icon:     "+",
   },
   {
-    title: "APS generated",
+    title:    "APS generated",
     subtitle: "Loan file moved to APS generated stage.",
-    time: "2 hrs ago",
-    icon: "★",
+    time:     "2 hrs ago",
+    icon:     "★",
   },
 ];
 
@@ -149,29 +104,23 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
   const [leadForm, setLeadForm] = useState(emptyLeadForm);
 
   const filteredLeads = leads.filter((lead) => {
-    if (selectedListView === "All Leads") return true;
-    if (selectedListView === "My Leads") return lead.owner !== "Contact Center";
-    if (selectedListView === "New Leads") return lead.status === "New";
+    if (selectedListView === "All Leads")         return true;
+    if (selectedListView === "My Leads")          return lead.owner !== "Contact Center";
+    if (selectedListView === "New Leads")         return lead.status === "New";
     if (selectedListView === "In Progress Leads") return lead.status === "In Progress";
-    if (selectedListView === "Converted Leads") return lead.status === "Converted";
-    if (selectedListView === "Disqualified Leads") return lead.status === "Disqualified";
-
+    if (selectedListView === "Converted Leads")   return lead.status === "Converted";
+    if (selectedListView === "Disqualified Leads")return lead.status === "Disqualified";
     return true;
   });
 
-  const totalLeads = leads.length;
-  const newLeads = leads.filter((lead) => lead.status === "New").length;
-  const inProgressLeads = leads.filter((lead) => lead.status === "In Progress").length;
-  const convertedLeads = leads.filter((lead) => lead.status === "Converted").length;
-  const disqualifiedLeads = leads.filter((lead) => lead.status === "Disqualified").length;
+  const totalLeads       = leads.length;
+  const newLeads         = leads.filter((l) => l.status === "New").length;
+  const inProgressLeads  = leads.filter((l) => l.status === "In Progress").length;
+  const convertedLeads   = leads.filter((l) => l.status === "Converted").length;
+  const disqualifiedLeads= leads.filter((l) => l.status === "Disqualified").length;
+  const conversionRate   = totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0;
 
-  const conversionRate =
-    totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0;
-
-  const handleOpenCreatePanel = () => {
-    setIsCreatePanelOpen(true);
-  };
-
+  const handleOpenCreatePanel  = () => setIsCreatePanelOpen(true);
   const handleCloseCreatePanel = () => {
     setIsCreatePanelOpen(false);
     setLeadForm(emptyLeadForm);
@@ -179,40 +128,33 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
 
   const handleLeadFormChange = (event) => {
     const { name, value } = event.target;
-
-    setLeadForm((previousForm) => ({
-      ...previousForm,
-      [name]: value,
-    }));
+    setLeadForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleCreateLead = (event) => {
     event.preventDefault();
-
     const newLead = {
-      id: `LD-${10021 + leads.length}`,
-      firstName: leadForm.firstName,
-      lastName: leadForm.lastName,
-      mobile: leadForm.mobile,
-      product: leadForm.product,
-      source: leadForm.source,
-      status: "New",
-      owner: "Sales User",
+      id:          `LD-${10021 + leads.length}`,
+      firstName:   leadForm.firstName,
+      lastName:    leadForm.lastName,
+      mobile:      leadForm.mobile,
+      product:     leadForm.product,
+      source:      leadForm.source,
+      status:      "New",
+      owner:       "Sales User",
       createdDate: "06 May 2026",
     };
-
     setSelectedListView("All Leads");
     handleCloseCreatePanel();
-
     onCreateLead(newLead);
   };
 
   return (
     <div className="dashboard-page">
+      {/* ── SIDEBAR ─────────────────────────── */}
       <aside className="app-sidebar">
         <div className="sidebar-brand">
           <div className="sidebar-logo">LOS</div>
-
           <div>
             <h2>LOS Portal</h2>
             <p>Loan Origination Workspace</p>
@@ -247,18 +189,24 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
         </nav>
 
         <div className="sidebar-insight-card">
-          <span>Today’s LOS Focus</span>
+          <span>Today's LOS Focus</span>
           <strong>12 loan files need attention</strong>
           <p>Inactive leads, document pending cases, and sent-back applications.</p>
         </div>
 
         <div className="sidebar-footer">
-          <p>Logged in as</p>
-          <strong>Sales User</strong>
+          <div className="sidebar-footer-avatar">SU</div>
+          <div className="sidebar-footer-info">
+            <p>Logged in as</p>
+            <strong>Sales User</strong>
+          </div>
         </div>
       </aside>
 
+      {/* ── MAIN ────────────────────────────── */}
       <main className="dashboard-main">
+
+        {/* Top bar */}
         <header className="dashboard-topbar">
           <div className="dashboard-title-block">
             <span className="page-eyebrow">LOS Command Center</span>
@@ -268,7 +216,6 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
               verification readiness, and credit review queues.
             </p>
           </div>
-
           <div className="topbar-actions">
             <button
               className="icon-only-button logout-action"
@@ -278,23 +225,21 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
             >
               <span>↪</span>
             </button>
-
-            <button
-              className="create-lead-button"
-              onClick={handleOpenCreatePanel}
-            >
+            <button className="create-lead-button" onClick={handleOpenCreatePanel}>
               <span>＋</span>
               Create Lead
             </button>
           </div>
         </header>
 
+        {/* KPI Grid */}
         <section className="kpi-grid">
           <div className="kpi-card primary-kpi">
             <div className="kpi-content">
               <span>Total Leads</span>
               <strong>{totalLeads}</strong>
               <p>Across active LOS lead sources</p>
+              <div className="kpi-trend up">↑ 8% vs last week</div>
             </div>
             <div className="kpi-icon">◎</div>
           </div>
@@ -304,6 +249,7 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
               <span>New Leads</span>
               <strong>{newLeads}</strong>
               <p>Awaiting first action</p>
+              <div className="kpi-trend up">↑ 12%</div>
             </div>
             <div className="kpi-icon">+</div>
           </div>
@@ -313,6 +259,7 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
               <span>In Progress</span>
               <strong>{inProgressLeads}</strong>
               <p>Application work started</p>
+              <div className="kpi-trend neutral">→ Stable</div>
             </div>
             <div className="kpi-icon">▣</div>
           </div>
@@ -322,15 +269,17 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
               <span>Converted</span>
               <strong>{convertedLeads}</strong>
               <p>Moved to loan application</p>
+              <div className="kpi-trend up">↑ 5%</div>
             </div>
             <div className="kpi-icon">✓</div>
           </div>
 
           <div className="kpi-card">
             <div className="kpi-content">
-              <span>Conversion</span>
+              <span>Conversion Rate</span>
               <strong>{conversionRate}%</strong>
               <p>Lead to application ratio</p>
+              <div className="kpi-trend up">↑ 2pts</div>
             </div>
             <div className="kpi-icon">↗</div>
           </div>
@@ -340,12 +289,16 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
               <span>Disqualified</span>
               <strong>{disqualifiedLeads}</strong>
               <p>Rejected or not eligible</p>
+              <div className="kpi-trend down">↑ 3%</div>
             </div>
             <div className="kpi-icon">!</div>
           </div>
         </section>
 
+        {/* First row */}
         <section className="dashboard-first-row">
+
+          {/* Lead List */}
           <section className="lead-panel compact-lead-panel">
             <div className="lead-panel-header">
               <div>
@@ -353,23 +306,19 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
                 <h2>Lead List View</h2>
                 <p>Live LOS lead records based on selected view.</p>
               </div>
-
               <div className="table-actions">
                 <div className="list-view-control">
                   <label htmlFor="listView">List View</label>
                   <select
                     id="listView"
                     value={selectedListView}
-                    onChange={(event) => setSelectedListView(event.target.value)}
+                    onChange={(e) => setSelectedListView(e.target.value)}
                   >
-                    {listViews.map((listView) => (
-                      <option key={listView} value={listView}>
-                        {listView}
-                      </option>
+                    {listViews.map((v) => (
+                      <option key={v} value={v}>{v}</option>
                     ))}
                   </select>
                 </div>
-
                 <button className="small-action-button">
                   <span>↓</span>
                   Export
@@ -389,7 +338,6 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
                     <th>Created</th>
                   </tr>
                 </thead>
-
                 <tbody>
                   {filteredLeads.map((lead) => (
                     <tr key={lead.id}>
@@ -402,7 +350,6 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
                           {lead.id}
                         </button>
                       </td>
-
                       <td>
                         <div className="customer-cell">
                           <span>
@@ -410,16 +357,12 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
                             {lead.lastName?.charAt(0)}
                           </span>
                           <div>
-                            <strong>
-                              {lead.firstName} {lead.lastName}
-                            </strong>
+                            <strong>{lead.firstName} {lead.lastName}</strong>
                             <p>{lead.mobile}</p>
                           </div>
                         </div>
                       </td>
-
                       <td>{lead.product}</td>
-
                       <td>
                         <span
                           className={`status-pill ${lead.status
@@ -429,7 +372,6 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
                           {lead.status}
                         </span>
                       </td>
-
                       <td>{lead.owner}</td>
                       <td>{lead.createdDate}</td>
                     </tr>
@@ -439,64 +381,59 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
             </div>
           </section>
 
+          {/* Source Mix */}
           <section className="insight-panel source-panel">
             <div className="panel-header">
               <div>
                 <span className="section-eyebrow">Lead Intake</span>
                 <h2>Source Mix</h2>
-                <p>Static source contribution by channel.</p>
+                <p>Contribution by channel this week.</p>
               </div>
             </div>
-
             <div className="channel-list">
-              {channelData.map((channel) => (
-                <div className="channel-row" key={channel.label}>
+              {channelData.map((ch) => (
+                <div className="channel-row" key={ch.label}>
                   <div className="channel-label">
                     <span>
-                      <i>{channel.icon}</i>
-                      {channel.label}
+                      <i>{ch.icon}</i>
+                      {ch.label}
                     </span>
-                    <strong>{channel.value}</strong>
+                    <strong>{ch.value}</strong>
                   </div>
-
                   <div className="channel-track">
-                    <div
-                      className="channel-fill"
-                      style={{ width: channel.width }}
-                    ></div>
+                    <div className="channel-fill" style={{ width: ch.width }} />
                   </div>
                 </div>
               ))}
             </div>
           </section>
 
+          {/* Verification Readiness */}
           <section className="insight-panel verification-panel">
             <div className="panel-header">
               <div>
                 <span className="section-eyebrow">Verification</span>
                 <h2>Readiness</h2>
-                <p>Static identity and document health.</p>
+                <p>Identity and document health.</p>
               </div>
             </div>
-
             <div className="donut-card">
               <div className="donut-chart">
                 <span>78%</span>
               </div>
-
               <div className="donut-legend">
                 <div>
-                  <i className="legend-dot completed"></i>
+                  <i className="legend-dot completed" />
                   Verified
                   <strong>78%</strong>
                 </div>
                 <div>
-                  <i className="legend-dot pending"></i>
+                  <i className="legend-dot pending" />
                   Pending
                   <strong>16%</strong>
                 </div>
                 <div>
-                  <i className="legend-dot failed"></i>
+                  <i className="legend-dot failed" />
                   Exception
                   <strong>6%</strong>
                 </div>
@@ -505,17 +442,19 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
           </section>
         </section>
 
+        {/* Second row */}
         <section className="dashboard-second-row">
+
+          {/* Origination Funnel */}
           <section className="insight-panel funnel-panel">
             <div className="panel-header">
               <div>
                 <span className="section-eyebrow">Loan File Movement</span>
                 <h2>Origination Funnel</h2>
-                <p>Movement from lead creation to APS generation.</p>
+                <p>Lead creation to APS generation.</p>
               </div>
               <span className="panel-pill">Current Week</span>
             </div>
-
             <div className="funnel-list">
               {funnelData.map((item) => (
                 <div className="funnel-row" key={item.label}>
@@ -523,20 +462,19 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
                     <span className="funnel-step">{item.icon}</span>
                     <strong>{item.label}</strong>
                   </div>
-
                   <div className="funnel-bar-wrap">
                     <div
                       className="funnel-bar"
                       style={{ width: `${Math.max(item.value / 2.2, 12)}%` }}
-                    ></div>
+                    />
                   </div>
-
                   <span className="funnel-value">{item.value}</span>
                 </div>
               ))}
             </div>
           </section>
 
+          {/* SLA Watchlist */}
           <section className="insight-panel">
             <div className="panel-header">
               <div>
@@ -545,7 +483,6 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
                 <p>Cases requiring operational attention.</p>
               </div>
             </div>
-
             <div className="watchlist">
               <div>
                 <span>Inactive Leads &gt; 5 Days</span>
@@ -566,6 +503,7 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
             </div>
           </section>
 
+          {/* Recent Activity */}
           <section className="insight-panel">
             <div className="panel-header">
               <div>
@@ -574,12 +512,10 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
                 <p>Latest lead and loan file movement.</p>
               </div>
             </div>
-
             <div className="activity-list">
               {activityData.map((activity) => (
                 <div className="activity-item" key={activity.title}>
                   <div className="activity-icon">{activity.icon}</div>
-
                   <div>
                     <strong>{activity.title}</strong>
                     <p>{activity.subtitle}</p>
@@ -591,7 +527,10 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
           </section>
         </section>
 
+        {/* Static table grid */}
         <section className="static-table-grid">
+
+          {/* Verification Queue */}
           <div className="mini-table-panel">
             <div className="mini-table-header">
               <div>
@@ -603,7 +542,6 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
               </div>
               <button>View All</button>
             </div>
-
             <table className="mini-table">
               <thead>
                 <tr>
@@ -612,7 +550,6 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
                   <th>Status</th>
                 </tr>
               </thead>
-
               <tbody>
                 {verificationQueue.map((row) => (
                   <tr key={`${row.lead}-${row.check}`}>
@@ -632,6 +569,7 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
             </table>
           </div>
 
+          {/* Credit Review Queue */}
           <div className="mini-table-panel">
             <div className="mini-table-header">
               <div>
@@ -643,7 +581,6 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
               </div>
               <button>View All</button>
             </div>
-
             <table className="mini-table">
               <thead>
                 <tr>
@@ -652,7 +589,6 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
                   <th>Aging</th>
                 </tr>
               </thead>
-
               <tbody>
                 {creditQueue.map((row) => (
                   <tr key={row.application}>
@@ -668,6 +604,7 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
             </table>
           </div>
 
+          {/* Document Exceptions */}
           <div className="mini-table-panel">
             <div className="mini-table-header">
               <div>
@@ -679,7 +616,6 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
               </div>
               <button>View All</button>
             </div>
-
             <table className="mini-table">
               <thead>
                 <tr>
@@ -688,7 +624,6 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
                   <th>Severity</th>
                 </tr>
               </thead>
-
               <tbody>
                 {documentExceptions.map((row) => (
                   <tr key={`${row.lead}-${row.document}`}>
@@ -710,19 +645,22 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
         </section>
       </main>
 
+      {/* ── CREATE LEAD DRAWER ───────────────── */}
       {isCreatePanelOpen && (
         <div className="drawer-backdrop" onClick={handleCloseCreatePanel}>
           <aside
             className="create-lead-drawer"
-            onClick={(event) => event.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
           >
             <div className="drawer-header">
               <div>
                 <span className="drawer-eyebrow">Lead Capture</span>
                 <h2>Create New Lead</h2>
-                <p>Capture applicant and loan requirement details to start the LOS journey.</p>
+                <p>
+                  Capture applicant and loan requirement details to start the
+                  LOS journey.
+                </p>
               </div>
-
               <button className="drawer-close-button" onClick={handleCloseCreatePanel}>
                 ×
               </button>
@@ -731,7 +669,6 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
             <form className="create-lead-form" onSubmit={handleCreateLead}>
               <div className="form-section">
                 <h3>Applicant Information</h3>
-
                 <div className="form-grid two-column">
                   <div className="field-group">
                     <label htmlFor="firstName">First Name</label>
@@ -745,7 +682,6 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
                       required
                     />
                   </div>
-
                   <div className="field-group">
                     <label htmlFor="lastName">Last Name</label>
                     <input
@@ -759,14 +695,13 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
                     />
                   </div>
                 </div>
-
                 <div className="field-group">
                   <label htmlFor="mobile">Mobile Number</label>
                   <input
                     id="mobile"
                     name="mobile"
                     type="tel"
-                    placeholder="Enter 10 digit mobile number"
+                    placeholder="Enter 10-digit mobile number"
                     value={leadForm.mobile}
                     onChange={handleLeadFormChange}
                     maxLength="10"
@@ -777,7 +712,6 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
 
               <div className="form-section">
                 <h3>Loan Requirement</h3>
-
                 <div className="form-grid two-column">
                   <div className="field-group">
                     <label htmlFor="product">Loan Product</label>
@@ -789,14 +723,11 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
                       required
                     >
                       <option value="">Select product</option>
-                      {productOptions.map((product) => (
-                        <option key={product} value={product}>
-                          {product}
-                        </option>
+                      {productOptions.map((p) => (
+                        <option key={p} value={p}>{p}</option>
                       ))}
                     </select>
                   </div>
-
                   <div className="field-group">
                     <label htmlFor="source">Lead Source</label>
                     <select
@@ -807,10 +738,8 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
                       required
                     >
                       <option value="">Select source</option>
-                      {sourceOptions.map((source) => (
-                        <option key={source} value={source}>
-                          {source}
-                        </option>
+                      {sourceOptions.map((s) => (
+                        <option key={s} value={s}>{s}</option>
                       ))}
                     </select>
                   </div>
@@ -820,8 +749,8 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
               <div className="drawer-info-card">
                 <strong>Default LOS Assignment</strong>
                 <p>
-                  The lead will be created with stage <b>New</b> and assigned to the logged-in
-                  sales user.
+                  The lead will be created with stage <b>New</b> and assigned
+                  to the logged-in sales user.
                 </p>
               </div>
 
@@ -833,7 +762,6 @@ function DashboardPage({ leads, onCreateLead, onLogout, onOpenLeadDetails }) {
                 >
                   Cancel
                 </button>
-
                 <button type="submit" className="header-action-button create-action">
                   <span className="header-action-icon">＋</span>
                   Create Lead
