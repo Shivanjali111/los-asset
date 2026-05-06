@@ -1,359 +1,220 @@
-import "./LeadDetailPage.css";
+import { useState } from "react";
+import "./LoginPage.css";
 
-const buildLeadDetails = (lead) => ({
-  alternateMobile: lead.alternateMobile || "—",
-  applicantCategory: lead.applicantCategory || "Salaried",
-  applicantType: lead.applicantType || "Individual",
-  apsNumber: lead.apsNumber || "—",
-  assignedTo: lead.assignedTo || "USR-1024",
-  assignedToName: lead.assignedToName || lead.owner || "Sales User",
-  balanceTransferBank: lead.balanceTransferBank || "—",
-  balanceTransferBankName: lead.balanceTransferBankName || "—",
-  branchName: lead.branchName || "Mumbai Andheri Branch",
-  btBankFunnel: lead.btBankFunnel || "—",
-  constitutionType: lead.constitutionType || "Individual",
-  consumerSystemName: lead.consumerSystemName || "LOS Web",
-  countryCode: lead.countryCode || "+91",
-  daysSinceLastActivity: lead.daysSinceLastActivity || "0",
-  emailVerified: lead.emailVerified || "No",
-  generationMode: lead.generationMode || "Manual",
-  leadAge: lead.leadAge || "0 Days",
-  leadNumber: lead.id,
-  leadOrigin: lead.leadOrigin || "Direct",
-  leadStage: lead.leadStage || lead.status || "New",
-  leadSubDisposition: lead.leadSubDisposition || "—",
-  leadSubSource: lead.leadSubSource || "—",
-  leadSubSubSource: lead.leadSubSubSource || "—",
-  loanFileStatus: lead.loanFileStatus || "Lead Draft",
-  loanPurpose: lead.loanPurpose || "Purchase",
-  loanTenureYears: lead.loanTenureYears || "20",
-  loanType: lead.loanType || lead.product || "Home Loan",
-  losOwnerTeam: lead.losOwnerTeam || "Sales Team",
-  losVerificationUser: lead.losVerificationUser || "—",
-  mobileVerified: lead.mobileVerified || "No",
-  monthlyGrossSalary: lead.monthlyGrossSalary || "₹85,000",
-  ownerName: lead.ownerName || lead.owner || "Sales User",
-  product: lead.product || "—",
-  projectPropertyName: lead.projectPropertyName || "—",
-  propertyIdentified: lead.propertyIdentified || "No",
-  requestedLoanAmount: lead.requestedLoanAmount || "₹45,00,000",
-  residentialStatus: lead.residentialStatus || "Resident Indian",
-  typeOfProperty: lead.typeOfProperty || "Flat / Apartment",
-});
+function LoginPage({ onLoginSuccess }) {
+  const [formData, setFormData] = useState({ username: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
 
-function EditableField({ label, value }) {
-  return (
-    <div className="record-field">
-      <div>
-        <span>{label}</span>
-        <strong>{value}</strong>
-      </div>
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-      <button className="field-edit-button" title={`Edit ${label}`}>
-        ✎
-      </button>
-    </div>
-  );
-}
-
-function Section({ title, subtitle, children }) {
-  return (
-    <section className="record-section">
-      <div className="record-section-header">
-        <div>
-          <h3>{title}</h3>
-          <p>{subtitle}</p>
-        </div>
-
-        <button className="section-edit-button">
-          ✎ Edit
-        </button>
-      </div>
-
-      <div className="record-field-grid">{children}</div>
-    </section>
-  );
-}
-
-function LeadDetailPage({ lead, onBack, onLogout }) {
-  const details = buildLeadDetails(lead);
+  const handleLogin = (event) => {
+    event.preventDefault();
+    onLoginSuccess();
+  };
 
   return (
-    <div className="lead-detail-layout">
-      <aside className="app-sidebar">
-        <div className="sidebar-brand">
-          <div className="sidebar-logo">LOS</div>
-          <div>
-            <h2>LOS Portal</h2>
-            <p>Loan Origination</p>
+    <main className="login-page">
+
+      {/* ── LEFT BRAND PANEL ──────────────────── */}
+      <section className="login-brand-panel">
+        {/* Decorative orbs */}
+        <div className="orb orb-1" />
+        <div className="orb orb-2" />
+        <div className="orb orb-3" />
+
+        {/* Header */}
+        <div className="brand-header">
+          <div className="brand-logo-wrap">
+            <img src="images/logo.png" alt="Digital Lending Logo" className="brand-logo-img" />
+          </div>
+          <div className="brand-header-text">
+            <h1>Digital Lending</h1>
+            <p>Loan Origination System</p>
           </div>
         </div>
 
-        <nav className="sidebar-nav">
-          <button className="nav-item" onClick={onBack}>Dashboard</button>
-          <button className="nav-item active">Leads</button>
-          <button className="nav-item">Applications</button>
-          <button className="nav-item">Applicants</button>
-          <button className="nav-item">Documents</button>
-          <button className="nav-item">Approvals</button>
-        </nav>
+        {/* Hero */}
+        <div className="brand-hero">
+          <div className="brand-eyebrow">
+            <span className="eyebrow-dot" />
+            Secure Digital Lending Workspace
+          </div>
+          <h2>Faster, smarter, more controlled loan origination.</h2>
+          <p>
+            Manage leads, applicants, documents, verifications, approvals, and
+            loan applications through a unified workspace built for modern
+            lending teams.
+          </p>
 
-        <div className="sidebar-footer">
-          <p>Logged in as</p>
-          <strong>Sales User</strong>
+          <ul className="feature-list">
+            <li className="feature-item">
+              <span className="feature-check">✓</span>
+              <span>Role-based secure access across all business teams</span>
+            </li>
+            <li className="feature-item">
+              <span className="feature-check">✓</span>
+              <span>Unified view of leads, applications, customers, and documents</span>
+            </li>
+            <li className="feature-item">
+              <span className="feature-check">✓</span>
+              <span>Designed for sales, contact center, credit, and operations</span>
+            </li>
+          </ul>
         </div>
-      </aside>
 
-      <main className="lead-detail-main">
-        <header className="record-topbar">
-          <div>
-            <button className="back-button" onClick={onBack}>
-              ← Back to Dashboard
-            </button>
+        {/* Stat cards */}
+        <div className="brand-stats">
+          <div className="stat-card">
+            <strong>Enterprise-grade</strong>
+            <span>Access, auditability &amp; workflow control</span>
+          </div>
+          <div className="stat-card">
+            <strong>AI-ready</strong>
+            <span>Prepared for intelligent lending assistance</span>
+          </div>
+          <div className="stat-card">
+            <strong>End-to-end</strong>
+            <span>Lead intake to APS generation in one platform</span>
+          </div>
+        </div>
+      </section>
 
-            <div className="record-title-wrap">
-              <div className="record-avatar">
-                {lead.firstName.charAt(0)}
-                {lead.lastName.charAt(0)}
-              </div>
+      {/* ── RIGHT FORM PANEL ──────────────────── */}
+      <section className="login-form-panel">
+        <div className="form-panel-bg" />
 
-              <div>
-                <span className="page-eyebrow">Lead Details</span>
+        <div className="login-card">
 
-                <div className="record-title-line">
-                  <h1>
-                    {lead.firstName} {lead.lastName}
-                  </h1>
+          {/* Card header */}
+          <div className="login-card-header">
+            <div className="login-badge">
+              <span className="badge-dot" />
+              Secure Login
+            </div>
+            <h2>Welcome back</h2>
+            <p>Sign in to continue to your LOS workspace.</p>
+          </div>
 
-                  <button className="title-edit-button" title="Edit lead name">
-                    ✎
-                  </button>
-                </div>
+          {/* Form */}
+          <form className="login-form" onSubmit={handleLogin}>
 
-                <p>
-                  {details.leadNumber} · {details.product} · {details.branchName}
-                </p>
+            <div className="form-group">
+              <label htmlFor="username">User ID / Email</label>
+              <div className="input-wrap">
+                <span className="input-icon">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+                </span>
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  placeholder="Enter your user ID or email"
+                  value={formData.username}
+                  onChange={handleChange}
+                  autoComplete="username"
+                  required
+                />
               </div>
             </div>
-          </div>
 
-          <div className="record-actions">
-            <button className="ghost-button" onClick={onLogout}>
-              Logout
-            </button>
-
-            <button className="verify-button">
-              Verify Mobile
-            </button>
-
-            <button className="verify-button">
-              Verify Email
-            </button>
-
-            <button className="primary-action-button">
-              Convert Lead
-            </button>
-          </div>
-        </header>
-
-        <section className="record-summary-strip">
-          <div className="summary-item">
-            <span>Lead Stage</span>
-            <strong>{details.leadStage}</strong>
-          </div>
-
-          <div className="summary-item">
-            <span>Loan File Status</span>
-            <strong>{details.loanFileStatus}</strong>
-          </div>
-
-          <div className="summary-item">
-            <span>Requested Amount</span>
-            <strong>{details.requestedLoanAmount}</strong>
-          </div>
-
-          <div className="summary-item">
-            <span>Assigned To</span>
-            <strong>{details.assignedToName}</strong>
-          </div>
-
-          <div className="summary-item">
-            <span>Mobile Verified?</span>
-            <strong className={details.mobileVerified === "Yes" ? "positive-text" : "pending-text"}>
-              {details.mobileVerified}
-            </strong>
-          </div>
-        </section>
-
-        <div className="record-page-grid">
-          <div className="record-main-column">
-            <Section
-              title="Primary Lead Information"
-              subtitle="Core details captured for this lead."
-            >
-              <EditableField label="Lead Number" value={details.leadNumber} />
-              <EditableField label="Product" value={details.product} />
-              <EditableField label="Lead Stage" value={details.leadStage} />
-              <EditableField label="Lead Origin" value={details.leadOrigin} />
-              <EditableField label="Lead Sub Source" value={details.leadSubSource} />
-              <EditableField label="Lead Sub Sub Source" value={details.leadSubSubSource} />
-              <EditableField label="Lead Sub Disposition" value={details.leadSubDisposition} />
-              <EditableField label="Generation Mode" value={details.generationMode} />
-              <EditableField label="Consumer System Name" value={details.consumerSystemName} />
-              <EditableField label="Lead Age" value={details.leadAge} />
-              <EditableField label="Days Since Last Activity" value={details.daysSinceLastActivity} />
-            </Section>
-
-            <Section
-              title="Customer & Contact Information"
-              subtitle="Applicant identity and contact details."
-            >
-              <EditableField label="First Name" value={lead.firstName} />
-              <EditableField label="Last Name" value={lead.lastName} />
-              <EditableField label="Country Code" value={details.countryCode} />
-              <EditableField label="Mobile" value={lead.mobile} />
-              <EditableField label="Alternate Mobile" value={details.alternateMobile} />
-              <EditableField label="Mobile Verified?" value={details.mobileVerified} />
-              <EditableField label="Email Verified?" value={details.emailVerified} />
-              <EditableField label="Residential Status" value={details.residentialStatus} />
-            </Section>
-
-            <Section
-              title="Applicant Details"
-              subtitle="Applicant profile and employment category."
-            >
-              <EditableField label="Applicant Type" value={details.applicantType} />
-              <EditableField label="Applicant Category" value={details.applicantCategory} />
-              <EditableField label="Constitution Type" value={details.constitutionType} />
-              <EditableField label="Monthly Gross Salary" value={details.monthlyGrossSalary} />
-            </Section>
-
-            <Section
-              title="Loan Details"
-              subtitle="Loan requirement, purpose, tenure, and property details."
-            >
-              <EditableField label="Loan Type" value={details.loanType} />
-              <EditableField label="Loan Purpose" value={details.loanPurpose} />
-              <EditableField label="Requested Loan Amount" value={details.requestedLoanAmount} />
-              <EditableField label="Loan Tenure (Years)" value={details.loanTenureYears} />
-              <EditableField label="Property Identified" value={details.propertyIdentified} />
-              <EditableField label="Project/Property Name" value={details.projectPropertyName} />
-              <EditableField label="Type of Property" value={details.typeOfProperty} />
-            </Section>
-
-            <Section
-              title="Balance Transfer Details"
-              subtitle="Balance transfer bank information, if applicable."
-            >
-              <EditableField label="Balance Transfer Bank" value={details.balanceTransferBank} />
-              <EditableField label="Balance Transfer Bank Name" value={details.balanceTransferBankName} />
-              <EditableField label="BT Bank (Funnel)" value={details.btBankFunnel} />
-            </Section>
-
-            <Section
-              title="Ownership & Assignment"
-              subtitle="Team, owner, branch, and verification assignment."
-            >
-              <EditableField label="Owner Name" value={details.ownerName} />
-              <EditableField label="LOS Owner Team" value={details.losOwnerTeam} />
-              <EditableField label="Assigned To" value={details.assignedTo} />
-              <EditableField label="Assigned To Name" value={details.assignedToName} />
-              <EditableField label="Branch Name" value={details.branchName} />
-              <EditableField label="LOS Verification User" value={details.losVerificationUser} />
-            </Section>
-
-            <Section
-              title="Application & APS Information"
-              subtitle="Application linkage and APS details."
-            >
-              <EditableField label="APS Number" value={details.apsNumber} />
-              <EditableField label="Loan File Status" value={details.loanFileStatus} />
-            </Section>
-          </div>
-
-          <aside className="record-side-column">
-            <section className="side-panel-card">
-              <h3>Verification</h3>
-
-              <div className="verification-row">
-                <div>
-                  <span>Mobile</span>
-                  <strong>{lead.mobile}</strong>
-                  <p>Status: {details.mobileVerified}</p>
-                </div>
-
-                <button className="small-verify-button">
-                  Verify
+            <div className="form-group">
+              <div className="label-row">
+                <label htmlFor="password">Password</label>
+                <button type="button" className="forgot-link">Forgot password?</button>
+              </div>
+              <div className="input-wrap">
+                <span className="input-icon">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                </span>
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  autoComplete="current-password"
+                  required
+                />
+                <button
+                  type="button"
+                  className="toggle-password"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                  ) : (
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  )}
                 </button>
               </div>
+            </div>
 
-              <div className="verification-row">
-                <div>
-                  <span>Email</span>
-                  <strong>Not captured</strong>
-                  <p>Status: {details.emailVerified}</p>
-                </div>
+            <div className="login-options">
+              <label className="remember-me">
+                <input type="checkbox" />
+                <span>Remember me</span>
+              </label>
+              <span className="secure-note">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                Protected workspace
+              </span>
+            </div>
 
-                <button className="small-verify-button">
-                  Verify
-                </button>
-              </div>
-            </section>
+            <button type="submit" className="login-button">
+              Sign In to LOS
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+                <polyline points="12 5 19 12 12 19"/>
+              </svg>
+            </button>
+          </form>
 
-            <section className="side-panel-card">
-              <h3>Lead Journey</h3>
-
-              <div className="journey-list">
-                <div className="journey-step active">
-                  <div className="journey-number">1</div>
-                  <div>
-                    <strong>Lead Created</strong>
-                    <p>Basic lead details are available.</p>
-                  </div>
-                </div>
-
-                <div className="journey-step">
-                  <div className="journey-number">2</div>
-                  <div>
-                    <strong>Verification</strong>
-                    <p>Mobile, email, and applicant checks can be completed.</p>
-                  </div>
-                </div>
-
-                <div className="journey-step">
-                  <div className="journey-number">3</div>
-                  <div>
-                    <strong>Application</strong>
-                    <p>Convert lead and create loan application.</p>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <section className="side-panel-card">
-              <h3>Quick Actions</h3>
-
-              <button className="quick-action-button">
-                Add Activity
-              </button>
-
-              <button className="quick-action-button">
-                Assign Lead
-              </button>
-
-              <button className="quick-action-button">
-                Upload Document
-              </button>
-
-              <button className="quick-action-button primary">
-                Convert Lead
-              </button>
-            </section>
-          </aside>
+          {/* Footer */}
+          <div className="login-card-footer">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <p>
+              By signing in, you agree to follow your organization&apos;s
+              security and data access policies.
+            </p>
+          </div>
         </div>
-      </main>
-    </div>
+
+        {/* Version label */}
+        <p className="version-label">Digital Lending LOS · v2.4.1</p>
+      </section>
+    </main>
   );
 }
 
-export default LeadDetailPage;
+export default LoginPage;
