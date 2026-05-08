@@ -213,14 +213,15 @@ function DashboardPage({ leads = [], onCreateLead, onLogout }) {
 
   const handleCreateLead = async (e) => {
     e.preventDefault();
-
+    // Create custom Lead ID first
+    const leadId = `LD-${Date.now()}`;
     try {
       const res = await fetch("https://weaq9mioy2.execute-api.ap-south-1.amazonaws.com/create-lead", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(leadForm),
+        body: JSON.stringify({ ...leadForm, id: leadId }),
       });
 
       const data = await res.json();
@@ -230,7 +231,7 @@ function DashboardPage({ leads = [], onCreateLead, onLogout }) {
       }
 
       const newLead = {
-        id: data.id || `LD-${Date.now()}`,
+        id: data.id || leadId,
         firstName: leadForm.firstName,
         lastName: leadForm.lastName,
         mobile: leadForm.mobile,

@@ -1,4 +1,5 @@
 import React from "react";
+import "./amplify";
 import ReactDOM from "react-dom/client";
 import { Amplify } from "aws-amplify";
 
