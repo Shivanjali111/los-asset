@@ -221,7 +221,7 @@ function DashboardPage({ leads = [], onCreateLead, onLogout }) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ ...leadForm, id: leadId }),
+        body: JSON.stringify({ ...leadForm, leadnumber: leadId }),
       });
 
       const data = await res.json();
@@ -231,7 +231,7 @@ function DashboardPage({ leads = [], onCreateLead, onLogout }) {
       }
 
       const newLead = {
-        id: data.id || leadId,
+        id: leadId,
         firstName: leadForm.firstName,
         lastName: leadForm.lastName,
         mobile: leadForm.mobile,

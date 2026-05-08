@@ -823,7 +823,7 @@ function DocumentRow({ doc, onDelete }) {
 function LeadDetailPage({ leads = [], onLogout, onConvertLead }) {
   const navigate = useNavigate();
   const { leadId } = useParams();
-  const lead = leads.find(l => l.id === leadId);
+  const lead = leads.find(l => l.leadNumber === leadId);
 
   const initialData = buildLeadDetails(lead || {});
 
