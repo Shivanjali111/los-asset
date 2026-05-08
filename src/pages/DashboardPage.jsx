@@ -223,15 +223,14 @@ function DashboardPage({ leads = [], onCreateLead, onLogout }) {
         },
         body: JSON.stringify({ ...leadForm, leadnumber: leadId }),
       });
-
       const data = await res.json();
-
+      console.log("Create Lead Response:", data);
       if (!res.ok) {
         throw new Error(data.message || "Failed to create lead");
       }
 
       const newLead = {
-        id: leadId,
+        id: data.leadNumber,
         firstName: leadForm.firstName,
         lastName: leadForm.lastName,
         mobile: leadForm.mobile,
@@ -240,6 +239,7 @@ function DashboardPage({ leads = [], onCreateLead, onLogout }) {
         source: leadForm.source,
         status: "New",
         owner: "Sales User",
+        leadNumber: data.leadNumber,
         createdDate: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
         ...data,
       };
