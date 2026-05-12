@@ -230,7 +230,7 @@ function DashboardPage({ leads = [], onCreateLead, onLogout }) {
       }
 
       const newLead = {
-        id: data.leadNumber,
+        id: leadId,
         firstName: leadForm.firstName,
         lastName: leadForm.lastName,
         mobile: leadForm.mobile,
@@ -239,7 +239,7 @@ function DashboardPage({ leads = [], onCreateLead, onLogout }) {
         source: leadForm.source,
         status: "New",
         owner: "Sales User",
-        leadNumber: data.leadNumber,
+        leadNumber: leadId,
         createdDate: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
         ...data,
       };
@@ -248,6 +248,7 @@ function DashboardPage({ leads = [], onCreateLead, onLogout }) {
       handleCloseCreatePanel();
 
       const newLeadId = onCreateLead ? onCreateLead(newLead) : newLead.id;
+      console.log("New Lead ID:", newLeadId);
       navigate(`/leads/${newLeadId}`);
     } catch (err) {
       alert(err.message || "An error occurred while creating the lead");

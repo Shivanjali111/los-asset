@@ -113,7 +113,7 @@ const buildLeadDetails = (lead = {}) => ({
   emailVerified: lead.emailVerified || "No",
   generationMode: lead.generationMode || "Manual",
   leadAge: lead.leadAge || "0 Days",
-  leadNumber: lead.leadNumber || "",
+  leadNumber: lead.id || "",
   leadOrigin: lead.leadOrigin || "Direct",
   leadStage: lead.leadStage || lead.status || "New",
   leadSubDisposition: lead.leadSubDisposition || "—",
