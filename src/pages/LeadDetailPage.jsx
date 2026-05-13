@@ -150,9 +150,7 @@ const validateEmailAddress = (email = "") => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).trim());
 };
 
-const buildEmailVerificationLink = ({ leadNumber, email }) => {
-  const baseUrl = window.location.origin;
-  const leadParam = encodeURIComponent(leadNumber || "");
+const buildEmailVerificationLink = ({ email }) => {
   const emailParam = encodeURIComponent(email || "");
 
   return `https://main.d3prbk14vc3ef9.amplifyapp.com/email/${emailParam}`;
@@ -247,7 +245,6 @@ const useVerificationState = (leadData) => {
 
         const customerName = `${leadData?.firstName || ""} ${leadData?.lastName || ""}`.trim() || "Customer";
         const verificationLink = buildEmailVerificationLink({
-          leadNumber: leadData?.leadNumber,
           email: emailAddress
         });
 
@@ -623,7 +620,6 @@ function SendEmailPanel({ form, onChange, onSubmit, onClose, leadEmail, leadData
 
     const customerName = `${leadData?.firstName || ""} ${leadData?.lastName || ""}`.trim() || "Customer";
     const verificationLink = buildEmailVerificationLink({
-      leadNumber: leadData?.leadNumber,
       email: leadData?.email
     });
 
@@ -830,7 +826,8 @@ function LeadDetailPage({ leads = [], onLogout, onConvertLead }) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
   const [leadStatus, setLeadStatus] = useState(initialData.leadStage);
-  const [leadData, setLeadData] = useState(initialData);
+  const [leadData, setLeadData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [activities, setActivities] = useState([{ id: 1, type: "status", title: "Lead Created", desc: `Created via ${initialData.generationMode} · Source: ${initialData.leadOrigin}`, time: "Today, 9:30 AM" }]);
   const [editingField, setEditingField] = useState(null);
   const [sectionEditMode, setSectionEditMode] = useState(null);
@@ -851,18 +848,59 @@ function LeadDetailPage({ leads = [], onLogout, onConvertLead }) {
   } = useVerificationState(leadData);
 
   useEffect(() => {
-    if (lead) {
-      const updatedData = buildLeadDetails(lead);
-      setLeadData(updatedData);
-      setLeadStatus(updatedData.leadStage);
-      setActivities([{ id: 1, type: "status", title: "Lead Created", desc: `Created via ${updatedData.generationMode} · Source: ${updatedData.leadOrigin}`, time: "Today, 9:30 AM" }]);
+  if (!lead) return;
+
+  const updatedData = buildLeadDetails(lead);
+
+  setTimeout(() => {
+    setLeadData(updatedData);
+    setLeadStatus(updatedData.leadStage);
+
+    setActivities([
+      {
+        id: 1,
+        type: "status",
+        title: "Lead Created",
+        desc: `Created via ${updatedData.generationMode} · Source: ${updatedData.leadOrigin}`,
+        time: "Today, 9:30 AM"
+      }
+    ]);
+  }, 0);
+
+  }, [lead]);
+
+  useEffect(() => {
+  if (!leadId) return;
+
+  const fetchLead = async () => {
+    try {
+      setLoading(true);
+
+      const response = await fetch(
+        `https://xx8ep3p2ue.execute-api.ap-south-1.amazonaws.com/prod/leads/${leadId}`
+      );
+
+      const result = await response.json();
+
+      if (result.success) {
+        const updatedData = buildLeadDetails(result.data);
+        setLeadData(updatedData);
+      }
+    } catch (error) {
+      console.error("Fetch Lead Error:", error);
+    } finally {
+      setLoading(false);
     }
-  }, [leadId, lead]);
+  };
+
+  fetchLead();
+  }, [leadId]);
 
   const handleFieldEdit = (key, val) => {
     setSectionEditMode(null);
     setEditingField({ key, value: val });
   };
+  
 
   const handleFieldChange = (val) => setEditingField(p => ({ ...p, value: val }));
 
@@ -1032,6 +1070,10 @@ function LeadDetailPage({ leads = [], onLogout, onConvertLead }) {
       });
     }
   };
+
+  if (loading) {
+  return <div>Loading...</div>;
+  }
 
   if (!lead) {
     return (
