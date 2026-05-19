@@ -105,6 +105,7 @@ function App() {
         setUser(null);
       }
     } catch (error) {
+      console.error("Error checking auth session:", error);
       setUser(null);
     } finally {
       setAuthChecking(false);
@@ -112,7 +113,33 @@ function App() {
   };
 
   useEffect(() => {
-    checkAuthSession();
+  let isMounted = true;
+
+  const loadSession = async () => {
+    try {
+      const session = await fetchAuthSession();
+      const user = await getCurrentUser();
+
+      if (isMounted && session?.tokens) {
+        setUser(user);
+      }
+    } catch (err) {
+      console.log("No active session",err);
+      if (isMounted) {
+        setUser(null);
+      }
+    } finally {
+      if (isMounted) {
+        //setLoading(false);
+      }
+    }
+  };
+
+  loadSession();
+
+  return () => {
+    isMounted = false;
+  };
   }, []);
 
   const handleLoginSuccess = async () => {
