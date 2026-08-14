@@ -50,16 +50,22 @@ const SpinnerIcon = () => (
 
 /* ── Mock data ───────────────────────────────────────────────────────── */
 const defaultProfile = {
-  firstName: "Rahul", middleName: "", lastName: "Sharma",
-  gender: "Male", dateOfBirth: "1991-07-14", maritalStatus: "Married",
-  fatherName: "Mahesh Sharma", motherName: "Sunita Sharma",
-  spouseName: "Priya Sharma", nationality: "Indian",
+  firstName: "Shivanjali", middleName: "Sadanand", lastName: "Gaikwad",
+  gender: "Female", dateOfBirth: "1996-01-11", maritalStatus: "Single",
+  fatherName: "Sadanand Gaikwad", motherName: "",
+  spouseName: "", nationality: "Indian",
   residentialStatus: "Resident Indian",
 };
 
 const emptyAddress = {
   line1: "", line2: "", landmark: "", city: "",
   district: "", state: "", pincode: "", country: "India",
+};
+
+const voterIdAddress = {
+  line1: "D-303, Fortune Estates Scorpio", line2: "Hadasar",
+  landmark: "", city: "Pune",
+  district: "Pune", state: "Maharashtra", pincode: "411028", country: "India",
 };
 
 const mockAddressByProof = {
@@ -73,11 +79,7 @@ const mockAddressByProof = {
     landmark: "Opposite Hiranandani Gardens", city: "Mumbai",
     district: "Mumbai Suburban", state: "Maharashtra", pincode: "400076", country: "India",
   },
-  "Voter ID": {
-    line1: "12, Green Park Society", line2: "MG Road",
-    landmark: "Near City Mall", city: "Pune",
-    district: "Pune", state: "Maharashtra", pincode: "411001", country: "India",
-  },
+  "Voter ID": voterIdAddress,
   Passport: {
     line1: "301, Orchid Enclave", line2: "Linking Road",
     landmark: "Near National College", city: "Mumbai",
@@ -260,34 +262,37 @@ function AddressGroup({ title, badge, address, onChange, locked }) {
 }
 
 /* ── Main component ──────────────────────────────────────────────────── */
-function ApplicantProfilePage() {
+function ApplicantProfilePage({ isCoApplicant = false }) {
   // Photo
   const photoInputRef     = useRef(null);
-  const [photoPreview,    setPhotoPreview]    = useState("");
+  const [photoPreview,    setPhotoPreview]    = useState(isCoApplicant ? "" : "/images/profile.jpg");
   const [photoCropSrc,    setPhotoCropSrc]    = useState("");
-  const [photoName,       setPhotoName]       = useState("");
+  const [photoName,       setPhotoName]       = useState(isCoApplicant ? "" : "Profile.jpg");
   const [showCropModal,   setShowCropModal]   = useState(false);
 
   // Personal details
-  const [profile,         setProfile]         = useState(defaultProfile);
+  const [profile,         setProfile]         = useState(isCoApplicant ? {
+    firstName: "", middleName: "", lastName: "",
+    gender: "", dateOfBirth: "", maritalStatus: "",
+    fatherName: "", motherName: "",
+    spouseName: "", nationality: "Indian",
+    residentialStatus: "Resident Indian",
+  } : defaultProfile);
   const [isEditingProfile,setIsEditingProfile] = useState(false);
 
   // Address proof
-  const [addressProofType,    setAddressProofType]    = useState("Aadhaar");
-  const [addressProofName,    setAddressProofName]    = useState("");
-  const [addressProofPreview, setAddressProofPreview] = useState("");
+  const [addressProofType,    setAddressProofType]    = useState("Voter ID");
+  const [addressProofName,    setAddressProofName]    = useState(isCoApplicant ? "" : "Voter Id_1550.pdf");
+  const [addressProofPreview, setAddressProofPreview] = useState(isCoApplicant ? "" : "/docs/Voter Id_1550.pdf");
+  const [addressProofIsPdf,   setAddressProofIsPdf]   = useState(!isCoApplicant);
   const [isOcrScanning,       setIsOcrScanning]       = useState(false);
-  const [ocrDone,             setOcrDone]             = useState(false);
-  const [ocrExtracted,        setOcrExtracted]        = useState(null);
+  const [ocrDone,             setOcrDone]             = useState(!isCoApplicant);
+  const [ocrExtracted,        setOcrExtracted]        = useState(isCoApplicant ? null : voterIdAddress);
 
   // Addresses
-  const [permanentAddress,  setPermanentAddress]  = useState({
-    line1: "Flat 402, Shree Heights", line2: "Andheri Kurla Road",
-    landmark: "Near Metro Station", city: "Mumbai",
-    district: "Mumbai Suburban", state: "Maharashtra", pincode: "400059", country: "India",
-  });
-  const [residentialAddress, setResidentialAddress] = useState(emptyAddress);
-  const [sameAsPermanent,    setSameAsPermanent]    = useState(false);
+  const [permanentAddress,  setPermanentAddress]  = useState(isCoApplicant ? emptyAddress : voterIdAddress);
+  const [residentialAddress, setResidentialAddress] = useState(isCoApplicant ? emptyAddress : voterIdAddress);
+  const [sameAsPermanent,    setSameAsPermanent]    = useState(!isCoApplicant);
   const [preferredAddress,   setPreferredAddress]   = useState("Residential");
 
   const communicationAddress = useMemo(() => {
@@ -323,9 +328,11 @@ function ApplicantProfilePage() {
     const file = e.target.files?.[0];
     if (!file) return;
     const isImg = file.type.startsWith("image/");
-    const previewUrl = isImg ? URL.createObjectURL(file) : "";
+    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    const previewUrl = (isImg || isPdf) ? URL.createObjectURL(file) : "";
     setAddressProofName(file.name);
     setAddressProofPreview(previewUrl);
+    setAddressProofIsPdf(isPdf);
     setOcrDone(false);
     setOcrExtracted(null);
     if (e.target) e.target.value = "";
@@ -508,7 +515,15 @@ function ApplicantProfilePage() {
               </div>
             )}
             {addressProofPreview ? (
-              <img src={addressProofPreview} alt="Address proof" className="ap-proof-img" />
+              addressProofIsPdf ? (
+                <iframe
+                  src={addressProofPreview}
+                  title="Address proof"
+                  className="ap-proof-iframe"
+                />
+              ) : (
+                <img src={addressProofPreview} alt="Address proof" className="ap-proof-img" />
+              )
             ) : (
               <div className="ap-proof-empty">
                 <FileIcon />

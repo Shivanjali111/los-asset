@@ -41,45 +41,68 @@ const LinkIcon = () => (
   </svg>
 );
 
-/* ── Mock data ───────────────────────────────────────────────────────── */
-const initialForm = {
-  employmentType: "Salaried",
-  employerName: "Deloitte India",
-  employerType: "Private Limited",
-  designation: "Senior Consultant",
-  department: "Technology",
-  employeeId: "EMP-10482",
-  totalExperienceYears: "8",
-  currentExperienceYears: "3",
-  salaryMode: "Bank Transfer",
-  monthlyGrossSalary: "85000",
-  monthlyNetSalary: "72000",
-  annualBonus: "180000",
-  businessName: "Sharma Consulting Services",
-  constitutionType: "Proprietorship",
-  industryType: "Professional Services",
-  businessVintageYears: "6",
-  annualTurnover: "4800000",
-  monthlyBusinessIncome: "320000",
-  netMonthlyIncome: "210000",
-  professionalType: "Consultant",
-  gstNumber: "27ABCDE1234F1Z5",
-  udyamNumber: "UDYAM-MH-19-0012345",
-  cinNumber: "U72900MH2020PTC123456",
-  businessPan: "ABCDE1234F",
-  shopActNumber: "MH-SHOP-2026-1842",
-  officePhone: "02245891234",
-  officialEmail: "rahul.sharma@deloitte.com",
-  businessEmail: "finance@sharmacompany.com",
-  preferredContactTime: "10 AM - 1 PM",
-  officeAddressLine1: "401, Business Park",
-  officeAddressLine2: "Andheri East",
-  officeLandmark: "Near Metro Station",
-  officeCity: "Mumbai",
-  officeDistrict: "Mumbai Suburban",
-  officeState: "Maharashtra",
-  officePincode: "400059",
-  officeCountry: "India",
+/* ── Employment profile value map (API → component) ─────────────────── */
+const EMPLOYMENT_PROFILE_MAP = {
+  Salaried:                    "Salaried",
+  "Self Employed Professional": "SEP",
+  SEP:                         "SEP",
+  "Self Employed Non Professional": "SENP",
+  SENP:                        "SENP",
+};
+
+/* ── Seed form from leadDetails (returns only defined fields) ─────────── */
+const buildFormFromLead = (leadDetails = null) => {
+  const empty = {
+    employmentType: "Salaried",
+    employerName: "",
+    employerType: "",
+    designation: "",
+    department: "",
+    employeeId: "",
+    totalExperienceYears: "",
+    currentExperienceYears: "",
+    salaryMode: "",
+    monthlyGrossSalary: "",
+    monthlyNetSalary: "",
+    annualBonus: "",
+    businessName: "",
+    constitutionType: "",
+    industryType: "",
+    businessVintageYears: "",
+    annualTurnover: "",
+    monthlyBusinessIncome: "",
+    netMonthlyIncome: "",
+    professionalType: "",
+    gstNumber: "",
+    udyamNumber: "",
+    cinNumber: "",
+    businessPan: "",
+    shopActNumber: "",
+    officePhone: "",
+    officialEmail: "",
+    businessEmail: "",
+    preferredContactTime: "",
+    officeAddressLine1: "",
+    officeAddressLine2: "",
+    officeLandmark: "",
+    officeCity: "",
+    officeDistrict: "",
+    officeState: "",
+    officePincode: "",
+    officeCountry: "",
+  };
+  const inc = leadDetails?.incomeDetails || {};
+  return {
+    ...empty,
+    employmentType:       EMPLOYMENT_PROFILE_MAP[leadDetails?.employmentProfile] || "Salaried",
+    employerType:         "Private Limited",
+    totalExperienceYears: "5",
+    currentExperienceYears: "5",
+    employerName:         inc.employerName        || "",
+    designation:          inc.designation         || "",
+    monthlyGrossSalary:   inc.grossMonthlySalary != null ? String(inc.grossMonthlySalary) : "",
+    monthlyNetSalary:     inc.netInHandSalary     != null ? String(inc.netInHandSalary)    : "",
+  };
 };
 
 /* ── Options ─────────────────────────────────────────────────────────── */
@@ -240,8 +263,8 @@ function RequestCard({ title, tag, tagType, description, status, onRequest, disa
 }
 
 /* ── Main component ──────────────────────────────────────────────────── */
-function IncomeEmploymentPage() {
-  const [form, setForm]               = useState(initialForm);
+function IncomeEmploymentPage({ lead }) {
+  const [form, setForm]               = useState(() => buildFormFromLead(lead?.leadDetails ?? null));
   const [isEditing, setIsEditing]     = useState({
     employer: false, income: false, identifiers: false,
     address: false,  communication: false,

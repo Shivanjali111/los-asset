@@ -237,8 +237,9 @@
   border: 1px solid transparent;
 }
 
-.co-chip.blue { background: var(--los-blue-light); color: var(--los-blue); border-color: rgba(30,95,165,.12); }
-.co-chip.gray { background: #f1f4f9; color: var(--los-muted); border-color: rgba(0,0,0,.06); }
+.co-chip.blue      { background: var(--los-blue-light); color: var(--los-blue); border-color: rgba(30,95,165,.12); }
+.co-chip.gray      { background: #f1f4f9; color: var(--los-muted); border-color: rgba(0,0,0,.06); }
+.co-chip.from-lead { background: #e8f0fb; color: #1e5fa5; border-color: rgba(30,95,165,.2); font-weight: 600; }
 
 /* Right: status + edit */
 .co-party-right {

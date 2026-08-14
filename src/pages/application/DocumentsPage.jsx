@@ -1,3 +1,4 @@
+//_______________This Code was generated using GenAI tool: Codify, Please check for accuracy_______________//
 import { useEffect, useMemo, useState } from "react";
 import "./DocumentsPage.css";
 import {
@@ -54,24 +55,83 @@ const XIcon = () => (
 );
 
 /* ── Data ────────────────────────────────────────────────────────────── */
-const applicants = [
-  { key: "Primary Applicant", name: "Rahul Sharma", role: "Primary Applicant" },
-  { key: "Priya Sharma", name: "Priya Sharma", role: "Co-Applicant" },
-  { key: "Mahesh Sharma", name: "Mahesh Sharma", role: "Guarantor" },
-];
-
-const baseChecklist = [
+const BASE_CHECKLIST_BEFORE_ADDRESS = [
   { type: "Identity Proof", subtype: "PAN Card", mandatory: true, ocrStatus: "Pending", verificationStatus: "Pending" },
   { type: "Photograph", subtype: "Applicant Photo", mandatory: true, ocrStatus: "Not Applicable", verificationStatus: "Pending" },
-  { type: "Address Proof", subtype: "Aadhaar", mandatory: true, ocrStatus: "Pending", verificationStatus: "Pending" },
-  { type: "Address Proof", subtype: "Driving License", mandatory: false, ocrStatus: "Pending", verificationStatus: "Pending" },
-  { type: "Address Proof", subtype: "Voter ID", mandatory: false, ocrStatus: "Pending", verificationStatus: "Pending" },
+];
+
+const BASE_CHECKLIST_AFTER_ADDRESS = [
   { type: "Income Proof", subtype: "Salary Slip - Latest Month", mandatory: true, ocrStatus: "Pending", verificationStatus: "Pending" },
   { type: "Income Proof", subtype: "Bank Statement - 6 Months", mandatory: true, ocrStatus: "Pending", verificationStatus: "Pending" },
   { type: "Income Proof", subtype: "Form 16", mandatory: false, ocrStatus: "Pending", verificationStatus: "Pending" },
   { type: "Application Document", subtype: "Generated Application Form", mandatory: true, ocrStatus: "Not Applicable", verificationStatus: "Pending" },
   { type: "Application Document", subtype: "Signed Application Form", mandatory: true, ocrStatus: "Not Applicable", verificationStatus: "Pending" },
 ];
+
+/* ── Demo seed: mirrors the pre-loaded state in CustomerIdentityPage &
+   ApplicantProfilePage. These act as fallbacks — any real localStorage
+   upload with the same documentKey takes priority. ─────────────────── */
+const DEMO_SEED_DOCS = [
+  {
+    applicant:          "Primary Applicant",
+    applicantName:      "Shivanjali Gaikwad",
+    applicantRole:      "Primary Applicant",
+    type:               "Identity Proof",
+    subtype:            "PAN Card",
+    documentKey:        "Primary Applicant__Identity Proof__PAN Card",
+    source:             "Customer Identity",
+    fileName:           "PanCard.jpg",
+    fileType:           "Image",
+    previewUrl:         "/images/PanCard.jpg",
+    ocrStatus:          "Completed",
+    verificationStatus: "Verified",
+    status:             "Uploaded",
+    uploadedBy:         "Sales User",
+    uploadedOn:         "16 Jun, 03:25 PM",
+  },
+  {
+    applicant:          "Primary Applicant",
+    applicantName:      "Shivanjali Gaikwad",
+    applicantRole:      "Primary Applicant",
+    type:               "Address Proof",
+    subtype:            "Voter ID",
+    documentKey:        "Primary Applicant__Address Proof__Voter ID",
+    source:             "Applicant Profile",
+    fileName:           "Voter Id_1550.pdf",
+    fileType:           "PDF / Document",
+    previewUrl:         "/docs/Voter Id_1550.pdf",
+    ocrStatus:          "Completed",
+    verificationStatus: "Pending Review",
+    status:             "Uploaded",
+    uploadedBy:         "Sales User",
+    uploadedOn:         "16 Jun, 03:30 PM",
+  },
+];
+
+function getBaseChecklist(applicantKey) {
+  const uploads = getUploadedDocuments();
+
+  /* Merge: real localStorage uploads override the demo seeds */
+  const allUploads = [
+    ...uploads,
+    ...DEMO_SEED_DOCS.filter(
+      (seed) => !uploads.some((u) => u.documentKey === seed.documentKey)
+    ),
+  ];
+
+  const addressUpload = allUploads.find(
+    (u) => u.type === "Address Proof" &&
+           (u.applicant === applicantKey ||
+            u.documentKey?.startsWith(applicantKey + "__Address Proof__"))
+  );
+  const addressSubtype = addressUpload?.subtype || "Voter ID";
+
+  return [
+    ...BASE_CHECKLIST_BEFORE_ADDRESS,
+    { type: "Address Proof", subtype: addressSubtype, mandatory: true, ocrStatus: "Pending", verificationStatus: "Pending" },
+    ...BASE_CHECKLIST_AFTER_ADDRESS,
+  ];
+}
 
 const primaryOnlyChecklist = [
   { type: "Property Document", subtype: "Property Title / Chain Document", mandatory: false, ocrStatus: "Pending", verificationStatus: "Pending" },
@@ -82,10 +142,11 @@ const filterOptions = ["All", "Pending", "Uploaded", "Verified", "Mandatory"];
 
 /* ── Helpers ─────────────────────────────────────────────────────────── */
 function getChecklistForApplicant(applicant) {
+  const base = getBaseChecklist(applicant.key);
   const checklist =
     applicant.key === "Primary Applicant"
-      ? [...baseChecklist, ...primaryOnlyChecklist]
-      : baseChecklist;
+      ? [...base, ...primaryOnlyChecklist]
+      : base;
 
   return checklist.map((item, index) => ({
     ...item,
@@ -104,14 +165,22 @@ function getChecklistForApplicant(applicant) {
   }));
 }
 
-function buildDocumentsFromChecklist() {
-  const actualUploads = getUploadedDocuments();
+function buildDocumentsFromChecklist(applicants) {
+  const localUploads = getUploadedDocuments();
+
+  /* Real localStorage uploads take priority; demo seeds fill the rest */
+  const allUploads = [
+    ...localUploads,
+    ...DEMO_SEED_DOCS.filter(
+      (seed) => !localUploads.some((u) => u.documentKey === seed.documentKey)
+    ),
+  ];
 
   return applicants.flatMap((applicant) => {
     const checklist = getChecklistForApplicant(applicant);
 
     return checklist.map((ci) => {
-      const up = actualUploads.find((u) => u.documentKey === ci.documentKey);
+      const up = allUploads.find((u) => u.documentKey === ci.documentKey);
 
       if (!up) return ci;
 
@@ -122,7 +191,7 @@ function buildDocumentsFromChecklist() {
         applicantName: ci.applicantName,
         applicantRole: ci.applicantRole,
         documentKey: ci.documentKey,
-        status: "Uploaded",
+        status: up.status || "Uploaded",
         source: up.source || "Internal Upload",
       };
     });
@@ -137,14 +206,33 @@ function getStatusClass(status) {
 }
 
 /* ── Component ───────────────────────────────────────────────────────── */
-function DocumentsPage() {
-  const [documents, setDocuments] = useState(buildDocumentsFromChecklist);
-  const [selectedApplicantKey, setSelectedApplicantKey] = useState(applicants[0].key);
+function DocumentsPage({ lead }) {
+  const [documents, setDocuments] = useState(() =>
+    buildDocumentsFromChecklist([{ key: "Primary Applicant", name: "Primary Applicant", role: "Primary Applicant" }])
+  );
+  const [selectedApplicantKey, setSelectedApplicantKey] = useState("Primary Applicant");
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchText, setSearchText] = useState("");
   const [previewDoc, setPreviewDoc] = useState(null);
 
-  const refreshDocuments = () => setDocuments(buildDocumentsFromChecklist());
+  const applicants = useMemo(() => {
+    const strPrimaryName = lead
+      ? `${lead.firstName || ""} ${lead.lastName || ""}`.trim() || "Primary Applicant"
+      : "Primary Applicant";
+    const lstApplicants = [{ key: "Primary Applicant", name: strPrimaryName, role: "Primary Applicant" }];
+    const objCoApp = lead?.leadDetails?.coApplicantDetails;
+    if (objCoApp && objCoApp.firstName) {
+      const strCoName = `${objCoApp.firstName} ${objCoApp.lastName || ""}`.trim();
+      lstApplicants.push({
+        key: `Co-Applicant__${strCoName}`,
+        name: strCoName,
+        role: `Co-Applicant · ${objCoApp.relationship || ""}`.trimEnd().replace(/·\s*$/, ""),
+      });
+    }
+    return lstApplicants;
+  }, [lead]);
+
+  const refreshDocuments = () => setDocuments(buildDocumentsFromChecklist(applicants));
 
   useEffect(() => {
     refreshDocuments();
@@ -156,7 +244,7 @@ function DocumentsPage() {
       window.removeEventListener(DOCUMENT_UPLOAD_EVENT, refreshDocuments);
       window.removeEventListener("storage", refreshDocuments);
     };
-  }, []);
+  }, [applicants]);
 
   const applicantStats = useMemo(
     () =>
@@ -174,7 +262,7 @@ function DocumentsPage() {
           mandatoryUploaded,
         };
       }),
-    [documents]
+    [applicants, documents]
   );
 
   const applicantDocuments = useMemo(
@@ -498,13 +586,22 @@ function DocumentsPage() {
 
             <div className="dp-preview-body">
               {previewDoc.previewUrl ? (
-                <img src={previewDoc.previewUrl} alt={previewDoc.subtype} />
+                previewDoc.fileType === "PDF / Document" ||
+                previewDoc.fileName?.toLowerCase().endsWith(".pdf") ? (
+                  <iframe
+                    src={previewDoc.previewUrl}
+                    title={previewDoc.subtype}
+                    className="dp-preview-pdf"
+                  />
+                ) : (
+                  <img src={previewDoc.previewUrl} alt={previewDoc.subtype} />
+                )
               ) : (
                 <div className="dp-preview-empty">
                   <FileIcon />
                   <strong>{previewDoc.fileName}</strong>
                   <p>
-                    Preview is available for image files only. PDF and document files are shown as metadata.
+                    Preview is available for image and PDF files only.
                   </p>
                 </div>
               )}
@@ -535,3 +632,4 @@ function DocumentsPage() {
 }
 
 export default DocumentsPage;
+//__________________________GenAI: Generated code ends here______________________________//

@@ -18,42 +18,65 @@ const XIcon = () => (
   </svg>
 );
 
-/* ── Data ────────────────────────────────────────────────────────────── */
-const initialCollateral = {
-  propertyIdentified:      "Yes",
-  collateralType:          "Residential Property",
-  propertyType:            "Flat / Apartment",
-  propertyUsage:           "Self Occupied",
-  propertyStage:           "Ready to Move",
-  occupancyStatus:         "Occupied by Applicant",
-  propertyOwnershipType:   "Owned",
-  projectName:             "Shree Heights",
-  builderName:             "Shree Developers",
-  towerBlock:              "Tower A",
-  unitNumber:              "402",
-  floorNumber:             "4",
-  totalFloors:             "18",
-  carpetArea:              "820",
-  builtUpArea:             "1040",
-  areaUnit:                "Sq. Ft.",
-  propertyAgeYears:        "5",
-  agreementValue:          "7800000",
-  estimatedMarketValue:    "8600000",
-  valuationAmount:         "8400000",
-  existingMortgage:        "No",
-  mortgageBankName:        "",
-  outstandingLoanAmount:   "",
+/* ── Property type value map (API → component) ───────────────────────── */
+const PROPERTY_TYPE_MAP = {
+  "Apartment":          "Flat / Apartment",
+  "Flat":               "Flat / Apartment",
+  "Flat / Apartment":   "Flat / Apartment",
+  "House":              "Independent House",
+  "Independent House":  "Independent House",
+  "Villa":              "Villa",
+  "Row House":          "Row House",
+  "Shop":               "Shop",
+  "Office":             "Office",
+  "Plot":               "Plot",
+  "Warehouse":          "Warehouse",
 };
 
-const initialAddress = {
-  line1:    "Flat 402, Shree Heights",
-  line2:    "Andheri Kurla Road",
-  landmark: "Near Metro Station",
-  city:     "Mumbai",
-  district: "Mumbai Suburban",
-  state:    "Maharashtra",
-  pincode:  "400059",
-  country:  "India",
+/* ── Seed collateral from leadDetails ────────────────────────────────── */
+const buildCollateralFromLead = (leadDetails = null) => {
+  const defaultCollateral = {
+    propertyIdentified:    "Yes",
+    collateralType:        "Residential Property",
+    propertyType:          "",
+    propertyUsage:         "Self Occupied",
+    propertyStage:         "Under Construction",
+    occupancyStatus:       "Builder Possession",
+    propertyOwnershipType: "Owned",
+    projectName:           "",
+    builderName:           "",
+    towerBlock:            "",
+    unitNumber:            "",
+    floorNumber:           "",
+    totalFloors:           "",
+    carpetArea:            "",
+    builtUpArea:           "",
+    areaUnit:              "",
+    propertyAgeYears:      "",
+    agreementValue:        "",
+    estimatedMarketValue:  "",
+    valuationAmount:       "",
+    existingMortgage:      "",
+    mortgageBankName:      "",
+    outstandingLoanAmount: "",
+  };
+  const defaultAddress = { line1: "", line2: "", landmark: "", city: "", district: "Pune", state: "Maharashtra", pincode: "", country: "India" };
+
+  if (!leadDetails?.collateralDetails) {
+    return { collateral: defaultCollateral, address: defaultAddress };
+  }
+
+  const cd = leadDetails.collateralDetails;
+  return {
+    collateral: {
+      ...defaultCollateral,
+      propertyType:  PROPERTY_TYPE_MAP[cd.propertyType] || cd.propertyType || "",
+      propertyStage: cd.propertyStage   || "Under Construction",
+      builderName:   cd.builderName     || "",
+      projectName:   cd.propertyAddress || "",
+    },
+    address: defaultAddress,
+  };
 };
 
 const initialOwners = [];
@@ -140,9 +163,10 @@ function SectionHead({ title, sub, editing, onEdit, action }) {
 }
 
 /* ── Component ───────────────────────────────────────────────────────── */
-function CollateralPage() {
-  const [collateral, setCollateral] = useState(initialCollateral);
-  const [address,    setAddress]    = useState(initialAddress);
+function CollateralPage({ lead }) {
+  const { collateral: seedCollateral, address: seedAddress } = buildCollateralFromLead(lead?.leadDetails ?? null);
+  const [collateral, setCollateral] = useState(seedCollateral);
+  const [address,    setAddress]    = useState(seedAddress);
   const [owners,     setOwners]     = useState(initialOwners);
   const [editing,    setEditing]    = useState({ basic: false, unit: false, addr: false, valuation: false });
 

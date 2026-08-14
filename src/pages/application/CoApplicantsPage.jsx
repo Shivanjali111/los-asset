@@ -1,3 +1,4 @@
+//_______________This Code was generated using GenAI tool: Codify, Please check for accuracy_______________//
 import { useMemo, useState } from "react";
 import "./CoApplicantsPage.css";
 import CustomerIdentityPage from "./CustomerIdentityPage";
@@ -90,6 +91,27 @@ const PARTY_GUIDE = [
   { type: "Financial Co-Borrower", desc: "Joint borrower sharing repayment liability" },
 ];
 
+/* ── Seed helper — builds initial parties list from lead prop ────────── */
+const buildInitialParties = (lead) => {
+  const cd = lead?.leadDetails?.coApplicantDetails;
+  if (!cd || !cd.firstName) return [];
+  return [{
+    id: "LEAD-CO-APPLICANT",
+    partyType: "Co-Applicant",
+    name: `${cd.firstName} ${cd.lastName}`,
+    relation: cd.relationship || "Not Specified",
+    mobile: cd.mobile || "Not captured",
+    email: "Not captured",
+    pan: "Pending",
+    employmentType: "Pending",
+    income: "Pending",
+    status: "Pending Verification",
+    mobileVerified: false,
+    emailVerified: false,
+    fromLead: true,
+  }];
+};
+
 /* ── Form field components (drawer forms — always in edit mode) ───────── */
 function FormField({ label, value, onChange, placeholder, type = "text", wide }) {
   return (
@@ -128,6 +150,7 @@ function PartyCard({ party, onEdit }) {
         <div className="co-party-meta">
           <span className="co-party-name">{party.name}</span>
           <div className="co-party-chips">
+            {party.fromLead && <span className="co-chip from-lead">From Lead</span>}
             <span className="co-chip blue">{party.partyType}</span>
             <span className="co-chip gray">{party.relation}</span>
             <span className="co-chip gray">{party.employmentType}</span>
@@ -177,8 +200,8 @@ function PartyCard({ party, onEdit }) {
 }
 
 /* ── Main component ──────────────────────────────────────────────────── */
-function CoApplicantsPage() {
-  const [parties,            setParties]            = useState([]);
+function CoApplicantsPage({ lead }) {
+  const [parties,            setParties]            = useState(() => buildInitialParties(lead));
   const [selectedPartyType,  setSelectedPartyType]  = useState("Co-Applicant");
   const [isPanelOpen,        setIsPanelOpen]        = useState(false);
   const [drawerStep,         setDrawerStep]         = useState("minimal");
@@ -476,8 +499,8 @@ function CoApplicantsPage() {
 
               {/* Embedded page */}
               <div className="co-embedded-step">
-                {activeTab === "identity"   && <CustomerIdentityPage />}
-                {activeTab === "profile"    && <ApplicantProfilePage />}
+                {activeTab === "identity"   && <CustomerIdentityPage isCoApplicant={true} />}
+                {activeTab === "profile"    && <ApplicantProfilePage isCoApplicant={true} />}
                 {activeTab === "employment" && <IncomeEmploymentPage />}
               </div>
             </div>
@@ -511,3 +534,4 @@ function CoApplicantsPage() {
 }
 
 export default CoApplicantsPage;
+//__________________________GenAI: Generated code ends here______________________________//

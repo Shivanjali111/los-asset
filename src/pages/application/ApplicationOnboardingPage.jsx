@@ -1,4 +1,4 @@
-import { useMemo, useState,useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "./ApplicationOnboardingPage.css";
 import CustomerIdentityPage from "./CustomerIdentityPage";
@@ -85,6 +85,356 @@ const ChevronLeftIcon = () => (
   </svg>
 );
 
+// ─── AVA Activity Panel helpers ──────────────────────────────────────────────
+const AVA_ACTIVITY_API    = "https://c30sce5j48.execute-api.ap-south-1.amazonaws.com/prod/activity";
+const WHATSAPP_CONSENT_API = "https://j0e80xdyw4.execute-api.ap-south-1.amazonaws.com/InitiatePropertyTypeWhatsAppChat";
+const ACTIVITY_LOG_API     = "https://j0e80xdyw4.execute-api.ap-south-1.amazonaws.com/activity-log-handler";
+
+const postActivityLog = async (payload) => {
+  try {
+    await fetch(ACTIVITY_LOG_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    console.error("Activity log API error:", err);
+  }
+};
+
+const sendWhatsAppCoApplicantMessage = async (mobileNumber) => {
+  const cleaned = String(mobileNumber || "").replace(/\D/g, "");
+  if (!cleaned) return;
+  try {
+    await fetch(WHATSAPP_CONSENT_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        targetPhoneNumber: cleaned,
+        messageBody:
+          "Dear Customer,\n\n" +
+          "Based on the loan amount and income details shared, we recommend adding a co-applicant to strengthen your Home Loan application. 👥\n\n" +
+          "Adding a co-applicant may help improve eligibility and make the approval process smoother.\n\n" +
+          "You can add your spouse, parent, or another eligible family member as a co-applicant.\n\n" +
+          "Please share the co-applicant's name and mobile number to proceed.\n\n" +
+          "Thank you.",
+      }),
+    });
+  } catch (err) {
+    console.error("WhatsApp co-applicant API error:", err);
+  }
+};
+
+const sendWhatsAppDetailsLink = async (mobileNumber, leadId) => {
+  const cleaned = String(mobileNumber || "").replace(/\D/g, "");
+  if (!cleaned) return;
+  try {
+    const response = await fetch(WHATSAPP_CONSENT_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        targetPhoneNumber: cleaned,
+        messageBody:
+          "Dear Customer,\n\n" +
+          "To move your Home Loan application ahead, we need a few additional details about your employment and the property/builder. 🏠\n\n" +
+          "This will help us assess your application faster and proceed with the next step.\n\n" +
+          "Thank you.",
+      }),
+    });
+    alert('response ' + JSON.stringify(response))
+  } catch (err) {
+    alert('error' + err)
+    console.error("WhatsApp details link API error:", err);
+  }
+};
+
+const OB_CATEGORY_CONFIG = {
+  INFO:            { bg: "#e8f0fb", border: "rgba(30,95,165,.22)",  color: "#1e5fa5", dot: "#1e5fa5",  label: "Info" },
+  WAITING:         { bg: "#fef3e0", border: "rgba(160,92,10,.22)",  color: "#a05c0a", dot: "#e0a82e",  label: "Waiting" },
+  SUCCESS:         { bg: "#e8f5e9", border: "rgba(46,125,50,.22)",  color: "#2e7d32", dot: "#2e7d32",  label: "Success" },
+  ERROR:           { bg: "#fdecea", border: "rgba(192,57,43,.22)",  color: "#c0392b", dot: "#c0392b",  label: "Error" },
+  WARNING:         { bg: "#fef3e0", border: "rgba(160,92,10,.22)",  color: "#a05c0a", dot: "#e0a82e",  label: "Warning" },
+  ACTION:          { bg: "#f3e8ff", border: "rgba(123,60,180,.22)", color: "#7b3cb4", dot: "#7b3cb4",  label: "Action" },
+  ACTION_REQUIRED: { bg: "#f3e8ff", border: "rgba(123,60,180,.22)", color: "#7b3cb4", dot: "#7b3cb4",  label: "Action Required" },
+};
+
+const OB_DEFAULT_ACTIVITY_ENTRY = {
+  id: "default-ava-onboarding",
+  action: "APPLICATION_ONBOARDING_STARTED",
+  display_text: "Application onboarding has been initiated. Ava is monitoring progress across all steps.",
+  category: "INFO",
+  actor_name: "Ava",
+  actor_type: "AGENT",
+  channel: "SYSTEM",
+  created_at: new Date().toISOString(),
+};
+
+const obNormalizeCategory = (category = "") => {
+  const v = String(category || "").trim().toUpperCase();
+  if (v === "ACTION_REQUIRED") return "ACTION_REQUIRED";
+  if (v === "ACTION") return "ACTION";
+  return v || "INFO";
+};
+
+const obGetCfg = (category) => OB_CATEGORY_CONFIG[obNormalizeCategory(category)] || OB_CATEGORY_CONFIG.INFO;
+
+const obGetChannelIcon = (channel = "") => {
+  const v = String(channel || "").trim().toUpperCase();
+  if (v === "WHATSAPP") return "💬";
+  if (v === "EMAIL") return "✉️";
+  if (v === "SMS") return "📱";
+  if (v === "TEAMS") return "👥";
+  if (v === "PORTAL") return "🖥️";
+  return "⚙️";
+};
+
+const obFormatTime = (isoString) => {
+  if (!isoString) return "";
+  try {
+    return new Date(isoString).toLocaleString("en-IN", {
+      day: "2-digit", month: "short", year: "numeric",
+      hour: "2-digit", minute: "2-digit", hour12: true,
+    });
+  } catch { return isoString; }
+};
+
+const obFormatAction = (action = "") =>
+  String(action || "AVA_ACTION").replace(/_/g, " ").trim().toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+
+// ─── AVA Activity Panel component ────────────────────────────────────────────
+function AvaActivityPanel({ leadId, leadMobile, completedCount, totalSteps }) {
+  const [logs, setLogs]                         = useState([]);
+  const [loading, setLoading]                   = useState(true);
+  const [showCoAppCard, setShowCoAppCard]       = useState(false);
+  const [coAppProceeding, setCoAppProceeding]   = useState(false);
+  const [coAppDone, setCoAppDone]               = useState(false);
+  const whatsappSentRef                         = useRef(false);
+  const coAppSentRef                            = useRef(false);
+
+  useEffect(() => {
+    if (!leadId) return;
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const res  = await fetch(`${AVA_ACTIVITY_API}/${leadId}`);
+        const data = await res.json();
+        const arr  = Array.isArray(data) ? data : [];
+        const sorted = [...arr].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        const finalLogs = sorted.length > 0 ? sorted : [OB_DEFAULT_ACTIVITY_ENTRY];
+        if (!cancelled) setLogs(finalLogs);
+
+        /* ── Details link trigger on page load ── */
+        if (!whatsappSentRef.current && finalLogs.length > 0) {
+          const latestAction = String(finalLogs[0].action || "").trim();
+          if (latestAction === "CUSTOMER_UPLOADED_KYC_DOCUMENTS") {
+            whatsappSentRef.current = true;
+            await sendWhatsAppDetailsLink('+918552051111', leadId);
+
+            await postActivityLog({
+				lead_id: leadId,
+				action: "DETAILS_LINK_SENT",
+				display_text: "I sent the employment and property details link to the customer to move the application ahead.",
+				category: "INFO",
+				channel: "WHATSAPP",
+				actor_type: "AGENT",
+				actor_name: "Ava",
+				payload_json: {
+					leadNumber: leadId,
+					detailsLinkSent: true,
+					detailsUrl: `https://main.d2s4uifsvainim.amplifyapp.com/details/${leadId}`,
+				},
+            });
+
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+
+            await postActivityLog({
+              lead_id: leadId,
+              action: "CUSTOMER_PROVIDED_DETAILS",
+              display_text: "Customer provided the required employment and property details for the application.",
+              category: "SUCCESS",
+              channel: "PORTAL",
+              actor_type: "CUSTOMER",
+              actor_name: "Customer",
+              payload_json: {
+                leadNumber: leadId,
+                detailsProvided: true,
+                detailsStatus: "COMPLETED",
+              },
+            });
+        }
+
+          /* ── Co-applicant insight card trigger ── */
+          if (latestAction === "CUSTOMER_PROVIDED_DETAILS") {
+            if (!cancelled) setShowCoAppCard(true);
+          }
+        }
+      } catch {
+        if (!cancelled) setLogs([OB_DEFAULT_ACTIVITY_ENTRY]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [leadId]);
+
+  const handleCoAppProceed = async () => {
+    if (coAppSentRef.current) return;
+    coAppSentRef.current = true;
+    setCoAppProceeding(true);
+
+    await sendWhatsAppCoApplicantMessage('+918552051111');
+
+    await postActivityLog({
+      lead_id: leadId,
+      action: "CO_APPLICANT_DETAILS_REQUESTED",
+      display_text: "Ava requested co-applicant details from the customer to strengthen the home loan application.",
+      category: "INFO",
+      channel: "WHATSAPP",
+      actor_type: "AGENT",
+      actor_name: "Ava",
+      payload_json: {
+        leadNumber: leadId,
+        coApplicantRequested: true,
+        reason: "Eligibility strengthening",
+      },
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
+    await postActivityLog({
+      lead_id: leadId,
+      action: "CUSTOMER_PROVIDED_CO_APPLICANT_DETAILS",
+      display_text: "Customer shared co-applicant details. The co-applicant has been added to the application.",
+      category: "SUCCESS",
+      channel: "WHATSAPP",
+      actor_type: "CUSTOMER",
+      actor_name: "Customer",
+      payload_json: {
+        leadNumber: leadId,
+        coApplicantDetailsReceived: true,
+        status: "COMPLETED",
+      },
+    });
+
+    setCoAppProceeding(false);
+    setCoAppDone(true);
+  };
+
+  const eventCount   = logs.filter((l) => l.id !== OB_DEFAULT_ACTIVITY_ENTRY.id).length || logs.length;
+  const latestLog    = logs[0] ?? OB_DEFAULT_ACTIVITY_ENTRY;
+  const latestCh     = latestLog?.channel || "SYSTEM";
+  const progressPct  = Math.round((completedCount / totalSteps) * 100);
+
+  return (
+    <aside className="ob-ava-panel">
+      {/* Header */}
+      <div className="ob-ava-head">
+        <div>
+          <h3>Ava Activity Console</h3>
+          <p>Live trail of every action Ava performed on this application.</p>
+        </div>
+        <span className="ob-ava-live-pill"><span className="ob-ava-live-dot" />Live</span>
+      </div>
+
+      {/* Co-applicant insight card */}
+      {showCoAppCard && (
+        <div className="ob-ava-insight-card">
+          <div className="ob-ava-insight-header">
+            <span className="ob-ava-insight-icon">🤖</span>
+            <div>
+              <span className="ob-ava-insight-label">Ava Recommendation</span>
+              <span className="ob-ava-insight-badge">⚠️ Eligibility Alert</span>
+            </div>
+          </div>
+
+          <p className="ob-ava-insight-body">
+            Ava has reviewed the customer's requested loan amount, tenure, and income details.
+          </p>
+
+          <div className="ob-ava-insight-finding">
+            <span className="ob-ava-insight-finding-icon">📊</span>
+            <p>
+              Based on the current income profile, the customer's eligibility may be <strong>tight</strong> for
+              the requested <strong>₹50 lakh</strong> loan over <strong>15 years</strong>. Ava recommends
+              adding a co-applicant to strengthen the application and improve approval chances.
+            </p>
+          </div>
+
+          <div className="ob-ava-insight-next">
+            <span className="ob-ava-insight-next-icon">👥</span>
+            <p><strong>Suggested next step:</strong> Ask the customer to share co-applicant details</p>
+          </div>
+
+          {coAppDone ? (
+            <div className="ob-ava-insight-done">
+              <span>✅</span>
+              <span>Co-applicant details requested. Activity logs updated.</span>
+            </div>
+          ) : (
+            <button
+              className="ob-ava-insight-proceed-btn"
+              onClick={handleCoAppProceed}
+              disabled={coAppProceeding}
+            >
+              {coAppProceeding ? (
+                <><span className="ob-ava-btn-spinner" /> Sending…</>
+              ) : (
+                <>👥 Proceed — Request Co-applicant Details</>
+              )}
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Log feed */}
+      {loading ? (
+        <div className="ob-ava-log-loading">
+          <span className="ob-ava-log-spinner" />
+          <span>Loading Ava activity…</span>
+        </div>
+      ) : (
+        <div className="ob-ava-log-feed">
+          {logs.map((entry, idx) => {
+            const cfg            = obGetCfg(entry.category);
+            const normCat        = obNormalizeCategory(entry.category);
+            const channelIcon    = obGetChannelIcon(entry.channel);
+            const actionLabel    = obFormatAction(entry.action);
+            const isLast         = idx === logs.length - 1;
+
+            return (
+              <div
+                key={`${entry.id || entry.created_at || entry.action}-${idx}`}
+              >
+                <div
+                  className={`ob-ava-log-card ob-ava-log-${normCat.toLowerCase().replace(/_/g, "-")}`}
+                  style={{ borderTopColor: cfg.dot }}
+                >
+                  <div className="ob-ava-log-card-header">
+                    <div className="ob-ava-log-title-group">
+                      <span className="ob-ava-log-action">{actionLabel}</span>
+                      <span className="ob-ava-log-time">{obFormatTime(entry.created_at)}</span>
+                    </div>
+                    <span className="ob-ava-log-badge" style={{ background: cfg.bg, color: cfg.color }}>
+                      {cfg.label}
+                    </span>
+                  </div>
+                  <p className="ob-ava-log-text">{entry.display_text}</p>
+                  <div className="ob-ava-log-footer">
+                    <span>{channelIcon} {entry.channel || "SYSTEM"}</span>
+                    {entry.actor_name && <span>By {entry.actor_name}</span>}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </aside>
+  );
+}
+
 // ─── Step config ──────────────────────────────────────────────────────────────
 const STEPS = [
   { id: "customer-identity",  number: "01", title: "Customer Identity",   description: "PAN, mobile, email and KYC verification",          icon: ShieldIcon,    component: CustomerIdentityPage,   dataKey: "customerIdentity"  },
@@ -99,10 +449,18 @@ const STEPS = [
   { id: "fees-submission",    number: "10", title: "Fees & Submission",   description: "Payment, final review and submit to credit",       icon: RupeeIcon,     component: FeesSubmissionPage,     dataKey: "feesSubmission"    },
 ];
 
-const INITIAL_STATUSES = STEPS.reduce((acc, step, i) => {
-  acc[step.id] = i === 0 ? "In Progress" : "Not Started";
-  return acc;
-}, {});
+const buildInitialStatuses = (leadDetails = null) => {
+  return STEPS.reduce((acc, step, i) => {
+    if (i === 0 || i === 1)                  acc[step.id] = "Completed";
+    else if (step.id === "income-employment") acc[step.id] = leadDetails?.incomeDetails   ? "Completed" : "In Progress";
+    else if (step.id === "collateral")        acc[step.id] = leadDetails?.collateralDetails ? "Completed" : "Not Started";
+    else if (step.id === "loan-requirement")  acc[step.id] = "Completed";
+    else                                      acc[step.id] = "Not Started";
+    return acc;
+  }, {});
+};
+
+const INITIAL_STATUSES = buildInitialStatuses();
 
 const INITIAL_APPLICATION_DATA = {
   customerIdentity:   { panNumber: "", mobileNumber: "", email: "", dateOfBirth: "", mobileVerified: false, emailVerified: false, panVerified: false },
@@ -138,35 +496,39 @@ function ApplicationOnboardingPage({ leads = [], onLogout }) {
   const [lead, setLead] = useState(null);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-  fetchLead();
-}, [leadId]);
+    fetchLead();
+  }, [leadId]);
 
-const fetchLead = async () => {
-  try {
-    const response = await fetch(
-      `https://xx8ep3p2ue.execute-api.ap-south-1.amazonaws.com/prod/leads/${leadId}`
-    );
+  const fetchLead = async () => {
+    try {
+      const response = await fetch(
+        `https://xx8ep3p2ue.execute-api.ap-south-1.amazonaws.com/prod/leads/${leadId}`
+      );
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (data.success) {
-      setLead({
-        id: data.data.leadnumber,
-        firstName: data.data.first_name,
-        lastName: data.data.last_name,
-        mobile: data.data.mobile,
-        email: data.data.email,
-        product: data.data.product,
-        source: data.data.source || "Direct",
-        owner: data.data.owner || "Sales User",
-        status: data.data.stage || "New",
-      });
+      if (data.success) {
+        const leadDetails = data.data.lead_details || null;
+        setLead({
+          id: data.data.leadnumber,
+          firstName: data.data.first_name,
+          lastName: data.data.last_name,
+          mobile: data.data.mobile,
+          email: data.data.email,
+          product: data.data.product,
+          source: data.data.source || "Direct",
+          owner: data.data.owner || "Sales User",
+          status: data.data.stage || "New",
+          leadDetails,
+        });
+        // Re-derive step statuses now that we have the actual lead_details
+        setStepStatuses(buildInitialStatuses(leadDetails));
+      }
+    } catch (error) {
+      console.error("Fetch Lead Error:", error);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Fetch Lead Error:", error);
-  } finally {
-    setLoading(false);
-  }
   };
 
   const activeStepIndex    = STEPS.findIndex((s) => s.id === activeStepId);
@@ -420,58 +782,13 @@ const fetchLead = async () => {
             </div>
           </section>
 
-          {/* Right: validation / info panel */}
-          <aside className="validation-panel">
-            <div className="validation-card">
-              <div className="validation-card-header">
-                <span className="validation-icon success"><CheckIcon /></span>
-                <div>
-                  <h3>Ready Checks</h3>
-                  <p>{completedCount} step{completedCount !== 1 ? "s" : ""} completed</p>
-                </div>
-              </div>
-              <ul className="validation-list">
-                <li><span className="val-icon success"><CheckIcon /></span>Mobile number verified</li>
-                <li><span className="val-icon success"><CheckIcon /></span>Primary applicant captured</li>
-                <li><span className="val-icon success"><CheckIcon /></span>Product selected</li>
-              </ul>
-            </div>
-
-            <div className="validation-card warning">
-              <div className="validation-card-header">
-                <span className="validation-icon warning"><AlertIcon /></span>
-                <div>
-                  <h3>Pending Items</h3>
-                  <p>Required before final submission</p>
-                </div>
-              </div>
-              <ul className="validation-list">
-                <li><span className="val-icon warning"><AlertIcon /></span>PAN verification pending</li>
-                <li><span className="val-icon warning"><AlertIcon /></span>Income documents missing</li>
-                <li><span className="val-icon warning"><AlertIcon /></span>Eligibility not calculated</li>
-              </ul>
-            </div>
-
-            <div className="validation-card info">
-              <div className="validation-card-header">
-                <span className="validation-icon info">
-                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" />
-                  </svg>
-                </span>
-                <div>
-                  <h3>Application Info</h3>
-                  <p>Current session details</p>
-                </div>
-              </div>
-              <div className="info-grid">
-                <div className="info-grid-item"><span>Branch</span><strong>Mumbai Central</strong></div>
-                <div className="info-grid-item"><span>RM</span><strong>{application?.owner || "Priya Sharma"}</strong></div>
-                <div className="info-grid-item"><span>Created</span><strong>{application?.createdDate || "07 May 2026"}</strong></div>
-                <div className="info-grid-item"><span>Source</span><strong>{application?.source || "Direct"}</strong></div>
-              </div>
-            </div>
-          </aside>
+          {/* Right: AVA activity log */}
+          <AvaActivityPanel
+            leadId={leadId}
+            leadMobile={lead?.mobile}
+            completedCount={completedCount}
+            totalSteps={STEPS.length}
+          />
 
         </section>
       </main>

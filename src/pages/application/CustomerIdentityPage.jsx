@@ -144,28 +144,59 @@ const formatDob = (iso) => {
   return `${+d} ${months[+m - 1]} ${y}`;
 };
 
-const buildInitialData = (stepData = {}, lead = {}) => ({
-  consentStatus: stepData.consentStatus || "Not Sent",
-  consentLinkSentAt: stepData.consentLinkSentAt || "",
-  consentCapturedAt: stepData.consentCapturedAt || "",
-  panDocumentName: stepData.panDocumentName || "",
-  panDocumentPreview: stepData.panDocumentPreview || "",
-  panDocumentS3ObjectKey: stepData.panDocumentS3ObjectKey || "",
-  panOcrStatus: stepData.panOcrStatus || "Pending",
-  panVerificationStatus: stepData.panVerificationStatus || "Pending",
-  panNumber: stepData.panNumber || "",
-  firstName: stepData.firstName || lead.firstName || "",
-  lastName: stepData.lastName || lead.lastName || "",
-  fatherName: stepData.fatherName || "",
-  dateOfBirth: stepData.dateOfBirth || "",
-  mobileNumber: stepData.mobileNumber || lead.mobile || "",
-  email: stepData.email || "",
-  mobileVerified: stepData.mobileVerified || false,
-  emailVerified: stepData.emailVerified || false,
-  panVerified: stepData.panVerified || false,
-  nsdlReferenceNumber: stepData.nsdlReferenceNumber || "",
-  nsdlVerifiedAt: stepData.nsdlVerifiedAt || ""
-});
+/* ── Demo seed data ──────────────────────────────────────────────────── */
+const DEMO_NSDL_REF = "NSDL-748291";
+const DEMO_VERIFIED_AT = "16 Jun, 03:25 PM";
+
+const buildInitialData = (stepData = {}, lead = {}, isCoApplicant = false) => {
+  if (isCoApplicant) {
+    return {
+      consentStatus: stepData.consentStatus || "Pending",
+      consentLinkSentAt: stepData.consentLinkSentAt || "",
+      consentCapturedAt: stepData.consentCapturedAt || "",
+      panDocumentName: stepData.panDocumentName || "",
+      panDocumentPreview: stepData.panDocumentPreview || "",
+      panDocumentS3ObjectKey: stepData.panDocumentS3ObjectKey || "",
+      panOcrStatus: stepData.panOcrStatus || "Pending",
+      panVerificationStatus: stepData.panVerificationStatus || "Pending",
+      panNumber: stepData.panNumber || "",
+      firstName: stepData.firstName || lead.firstName || "",
+      lastName: stepData.lastName || lead.lastName || "",
+      fatherName: stepData.fatherName || "",
+      dateOfBirth: stepData.dateOfBirth || "",
+      mobileNumber: stepData.mobileNumber || lead.mobile || "",
+      email: stepData.email || "",
+      mobileVerified: stepData.mobileVerified || false,
+      emailVerified: stepData.emailVerified || false,
+      panVerified: stepData.panVerified !== undefined ? stepData.panVerified : false,
+      nsdlReferenceNumber: stepData.nsdlReferenceNumber || "",
+      nsdlVerifiedAt: stepData.nsdlVerifiedAt || ""
+    };
+  }
+
+  return {
+    consentStatus: stepData.consentStatus || "Captured",
+    consentLinkSentAt: stepData.consentLinkSentAt || "16 Jun, 03:20 PM",
+    consentCapturedAt: stepData.consentCapturedAt || "16 Jun, 03:21 PM",
+    panDocumentName: stepData.panDocumentName || "PanCard.jpg",
+    panDocumentPreview: stepData.panDocumentPreview || "/images/PanCard.jpg",
+    panDocumentS3ObjectKey: stepData.panDocumentS3ObjectKey || "",
+    panOcrStatus: stepData.panOcrStatus || "Completed",
+    panVerificationStatus: stepData.panVerificationStatus || "Verified",
+    panNumber: stepData.panNumber || "CIJPG1001N",
+    firstName: stepData.firstName || lead.firstName || "Shivanjali",
+    lastName: stepData.lastName || lead.lastName || "Gaikwad",
+    fatherName: stepData.fatherName || "Sadanand Gaikwad",
+    dateOfBirth: stepData.dateOfBirth || "1996-11-01",
+    mobileNumber: stepData.mobileNumber || lead.mobile || "",
+    email: stepData.email || "",
+    mobileVerified: stepData.mobileVerified || false,
+    emailVerified: stepData.emailVerified || false,
+    panVerified: stepData.panVerified !== undefined ? stepData.panVerified : true,
+    nsdlReferenceNumber: stepData.nsdlReferenceNumber || DEMO_NSDL_REF,
+    nsdlVerifiedAt: stepData.nsdlVerifiedAt || DEMO_VERIFIED_AT
+  };
+};
 
 const validateFile = (file) => {
   if (!ALLOWED_FILE_TYPES.includes(file.type)) {
@@ -250,11 +281,12 @@ function CustomerIdentityPage({
   stepData = {},
   sectionKey = "customerIdentity",
   updateApplicationData,
-  updateStepStatus
+  updateStepStatus,
+  isCoApplicant = false
 }) {
   const fileInputRef = useRef(null);
 
-  const [formData, setFormData] = useState(() => buildInitialData(stepData, lead));
+  const [formData, setFormData] = useState(() => buildInitialData(stepData, lead, isCoApplicant));
   const [notice, setNotice] = useState("");
   const [uploadError, setUploadError] = useState("");
   const [isConsentWaiting, setIsConsentWaiting] = useState(false);
@@ -263,9 +295,30 @@ function CustomerIdentityPage({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isVerifyingPan, setIsVerifyingPan] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [ocrDone, setOcrDone] = useState(false);
-  const [verifyResult, setVerifyResult] = useState(null);
+  const [ocrDone, setOcrDone] = useState(
+    () => buildInitialData(stepData, lead, isCoApplicant).panOcrStatus === "Completed"
+  );
+  const [verifyResult, setVerifyResult] = useState(() => {
+    const init = buildInitialData(stepData, lead, isCoApplicant);
+    if (init.panVerificationStatus === "Verified") {
+      return {
+        status: "Verified",
+        variant: "success",
+        headline: "Identity confirmed",
+        subline: "Name, date of birth and PAN number match NSDL records.",
+        nsdlRef: init.nsdlReferenceNumber,
+        verifiedAt: init.nsdlVerifiedAt
+      };
+    }
+    return null;
+  });
   const [verifyAttempts, setVerifyAttempts] = useState(0);
+
+  const [cibilFetching, setCibilFetching] = useState(false);
+  const [cibilFetched, setCibilFetched] = useState(() => {
+    const init = buildInitialData(stepData, lead, isCoApplicant);
+    return init.panVerificationStatus === "Verified";
+  });
 
   const consentCaptured = formData.consentStatus === "Captured";
   const consentSent = formData.consentStatus === "Sent";
@@ -276,7 +329,9 @@ function CustomerIdentityPage({
     formData.panDocumentName?.toLowerCase().endsWith(".pdf") ||
     String(formData.panDocumentPreview).startsWith("data:application/pdf");
 
-  const isImage = String(formData.panDocumentPreview).startsWith("data:image");
+  const isImage =
+    String(formData.panDocumentPreview).startsWith("data:image") ||
+    /\.(jpg|jpeg|png|webp|gif)$/i.test(formData.panDocumentPreview);
 
   const syncParent = (updates) => updateApplicationData?.(sectionKey, updates);
 
@@ -706,6 +761,7 @@ function CustomerIdentityPage({
             <div className={`cid-step-node ${panVerified ? "complete" : panUploaded ? "active" : "idle"}`}>
               {panVerified ? <CheckIcon /> : <span>2</span>}
             </div>
+            <div className={`cid-step-line ${panVerified ? "filled" : ""}`} />
           </div>
 
           <div className="cid-step-panel">
@@ -1006,7 +1062,152 @@ function CustomerIdentityPage({
             </div>
           </div>
         </div>
-      </div> 
+        {/* ── Step 3: CIBIL Score ──────────────────────────────────────── */}
+        <div className={`cid-step${!panVerified ? " cid-step--locked" : ""}`}>
+          <div className="cid-step-track">
+            <div className={`cid-step-node ${cibilFetched ? "complete" : panVerified ? "active" : "idle"}`}>
+              {cibilFetched ? <CheckIcon /> : <span>3</span>}
+            </div>
+          </div>
+
+          <div className="cid-step-panel">
+            <div className="cid-panel-head">
+              <div>
+                <span className="cid-panel-title">CIBIL Score</span>
+                <span className="cid-panel-sub">
+                  Credit bureau score fetched via PAN after identity verification
+                </span>
+              </div>
+
+              <span className={`cid-badge ${cibilFetched ? "green" : panVerified ? "amber" : "gray"}`}>
+                {cibilFetched ? <CheckIcon /> : <ClockIcon />}
+                {cibilFetched ? "Fetched" : panVerified ? "Ready" : "Pending"}
+              </span>
+            </div>
+
+            {!panVerified && (
+              <div className="cid-lock-note">
+                Complete PAN verification to fetch CIBIL score
+              </div>
+            )}
+
+            <div className={`cid-panel-body${!panVerified ? " locked" : ""}`}>
+              {cibilFetching && (
+                <div className="cid-banner info" style={{ margin: "14px 16px 0" }}>
+                  <SpinnerIcon />
+                  <span>Fetching credit score from CIBIL bureau…</span>
+                </div>
+              )}
+
+              {!cibilFetched && !cibilFetching && panVerified && (
+                <div className="cid-cibil-fetch-area">
+                  <div>
+                    <div className="cid-copy-main">Fetch credit score from CIBIL</div>
+                    <div className="cid-copy-sub">
+                      Uses the verified PAN &nbsp;·&nbsp; <strong>{formData.panNumber}</strong>
+                    </div>
+                  </div>
+                  <button
+                    className="cid-btn-primary"
+                    type="button"
+                    onClick={() => {
+                      setCibilFetching(true);
+                      window.setTimeout(() => {
+                        setCibilFetching(false);
+                        setCibilFetched(true);
+                      }, 2200);
+                    }}
+                  >
+                    <ShieldIcon /> Fetch Score
+                  </button>
+                </div>
+              )}
+
+              {cibilFetched && !cibilFetching && (
+                <div className="cid-cibil-result">
+                  {/* Gauge */}
+                  <div className="cid-cibil-gauge-wrap">
+                    <svg className="cid-cibil-gauge" viewBox="0 0 120 70">
+                      {/* Background arc */}
+                      <path
+                        d="M10 65 A50 50 0 0 1 110 65"
+                        fill="none"
+                        stroke="#e8edf4"
+                        strokeWidth="10"
+                        strokeLinecap="round"
+                      />
+                      {/* Filled arc — 690 out of 900, so ~69% of 180° = 124° */}
+                      <path
+                        d="M10 65 A50 50 0 0 1 110 65"
+                        fill="none"
+                        stroke="url(#cibilGradient)"
+                        strokeWidth="10"
+                        strokeLinecap="round"
+                        strokeDasharray="157"
+                        strokeDashoffset="49"
+                      />
+                      <defs>
+                        <linearGradient id="cibilGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#f59e0b" />
+                          <stop offset="60%" stopColor="#22c55e" />
+                          <stop offset="100%" stopColor="#16a34a" />
+                        </linearGradient>
+                      </defs>
+                      {/* Score text */}
+                      <text x="60" y="58" textAnchor="middle" className="cid-cibil-score-text">690</text>
+                    </svg>
+                    <div className="cid-cibil-gauge-labels">
+                      <span>300</span>
+                      <span>900</span>
+                    </div>
+                  </div>
+
+                  {/* Details */}
+                  <div className="cid-cibil-detail-col">
+                    <div className="cid-cibil-score-badge">
+                      <span className="cid-cibil-score-num">690</span>
+                      <span className="cid-cibil-score-tag">Good</span>
+                    </div>
+
+                    <div className="cid-cibil-meta-grid">
+                      <div className="cid-cibil-meta-item">
+                        <span className="cid-cibil-meta-label">Bureau</span>
+                        <span className="cid-cibil-meta-value">TransUnion CIBIL</span>
+                      </div>
+                      <div className="cid-cibil-meta-item">
+                        <span className="cid-cibil-meta-label">Score Range</span>
+                        <span className="cid-cibil-meta-value">300 – 900</span>
+                      </div>
+                      <div className="cid-cibil-meta-item">
+                        <span className="cid-cibil-meta-label">Report Date</span>
+                        <span className="cid-cibil-meta-value">{new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
+                      </div>
+                      <div className="cid-cibil-meta-item">
+                        <span className="cid-cibil-meta-label">Active Accounts</span>
+                        <span className="cid-cibil-meta-value">3</span>
+                      </div>
+                      <div className="cid-cibil-meta-item">
+                        <span className="cid-cibil-meta-label">Overdue Accounts</span>
+                        <span className="cid-cibil-meta-value">0</span>
+                      </div>
+                      <div className="cid-cibil-meta-item">
+                        <span className="cid-cibil-meta-label">Enquiries (6m)</span>
+                        <span className="cid-cibil-meta-value">2</span>
+                      </div>
+                    </div>
+
+                    <div className="cid-cibil-verdict">
+                      <CheckIcon />
+                      Score meets minimum threshold for Home Loan eligibility
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 }
