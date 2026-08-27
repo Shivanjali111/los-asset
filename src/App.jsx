@@ -96,6 +96,37 @@ function App() {
   const [user, setUser] = useState(null);
   const [leads, setLeads] = useState(initialLeads);
 
+  // Catch-all sanitizer for DOM text nodes during video recording
+  useEffect(() => {
+    const replaceBankText = (node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        if (node.nodeValue && /yes\s*bank/i.test(node.nodeValue)) {
+          node.nodeValue = node.nodeValue.replace(/yes\s*bank/gi, "Partner Bank");
+        }
+      } else {
+        node.childNodes.forEach(replaceBankText);
+      }
+    };
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach(replaceBankText);
+        if (mutation.type === "characterData") {
+          replaceBankText(mutation.target);
+        }
+      });
+    });
+
+    replaceBankText(document.body);
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   const checkAuthSession = async () => {
     try {
       const currentUser = await getCurrentUser();

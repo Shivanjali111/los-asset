@@ -424,7 +424,7 @@ const buildView = (leadDetails, lead) => {
         (typeof appraiserSource === "string" ? appraiserSource : "") ||
         "Mohit Kumawat",
       email: appraiserObject.email || appraiserObject.appraiserEmail || "mohikumawat@deloitte.com",
-      id: appraiserObject.id || appraiserObject.appraiserId || "APR-YES-0142",
+      id: appraiserObject.id || appraiserObject.appraiserId || "APR-APEX-0142",
       type: appraiserObject.type || appraiserObject.appraiserType || "Panel Jeweller",
       branch: appraiserObject.branch || appraiserObject.assignedBranch || loan.branch.name,
     },
@@ -723,8 +723,7 @@ export default function ApplicationDetailsTab({
     (/checker|sanction/.test(statusText) ||
       (/submitted/.test(eligibilityStatusText) && assignmentMatches("Checker"))) &&
     !/sanctioned|rejected/.test(statusText);
-  // Every workflow section remains visible. Edit controls are independently
-  // gated above so only the assigned role can change its active work item.
+
   const visibleSections = SECTIONS;
 
   const actor = useMemo(
@@ -842,8 +841,6 @@ export default function ApplicationDetailsTab({
 
   useEffect(() => {
     const draftKey = JSON.stringify({ appraisalItems, makerDraft, checkerDraft });
-    // The initial values are loaded from leadDetails. Never PATCH that first
-    // render back as a draft, as it can overwrite a just-completed appraisal.
     if (!autoSaveReadyRef.current) {
       autoSaveReadyRef.current = true;
       lastAutoSaveRef.current = draftKey;
@@ -919,7 +916,6 @@ export default function ApplicationDetailsTab({
     (item) => item.total > 0 || item.key === "goldOrnament" || item.key === "goldCoin",
   );
 
-  // Simple validation safeguard for non-negative values
   const validateAppraisal = () => {
     const errors = {};
     appraisalItems.forEach((item) => {
@@ -1619,7 +1615,7 @@ export default function ApplicationDetailsTab({
                 <Field label="Relationship" required error={validationErrors.nomineeRelationship}><select value={makerDraft.nominee.relationship} onChange={(event) => setMakerDraft((current) => ({ ...current, nominee: { ...current.nominee, relationship: event.target.value } }))}><option value="">Select relationship</option>{["Spouse", "Son", "Daughter", "Father", "Mother", "Brother", "Sister", "Other"].map((option) => <option key={option}>{option}</option>)}</select></Field>
                 <Field label="Date of birth" required error={validationErrors.nomineeDob}><input type="date" value={makerDraft.nominee.dateOfBirth} onChange={(event) => setMakerDraft((current) => ({ ...current, nominee: { ...current.nominee, dateOfBirth: event.target.value } }))} /></Field>
                 <Field label="Nominee address"><input value={makerDraft.nominee.address} onChange={(event) => setMakerDraft((current) => ({ ...current, nominee: { ...current.nominee, address: event.target.value } }))} /></Field>
-                {minor && <><div className="minor-notice wide"><Icon type="info" />Nominee is a minor. Guardian details are mandatory.</div><Field label="Guardian name" required error={validationErrors.guardianName}><input value={makerDraft.nominee.guardianName} onChange={(event) => setMakerDraft((current) => ({ ...current, nominee: { ...current.nominee, guardianName: event.target.value } }))} /></Field><Field label="Guardian relationship"><input value={makerDraft.nominee.guardianRelationship} onChange={(event) => setMakerDraft((current) => ({ ...current, nominee: { ...current.nominee, guardianRelationship: event.target.value } }))} /></Field><Field label="Guardian contact" wide><input value={makerDraft.nominee.guardianContact} onChange={(event) => setMakerDraft((current) => ({ ...current, nominee: { ...current.nominee, guardianContact: event.target.value } }))} /></Field></>}
+                {minor && <><div className="minor-notice wide"><Icon type="info" />Nominee is a minor. Guardian details are required.</div><Field label="Guardian name" required error={validationErrors.guardianName}><input value={makerDraft.nominee.guardianName} onChange={(event) => setMakerDraft((current) => ({ ...current, nominee: { ...current.nominee, guardianName: event.target.value } }))} /></Field><Field label="Guardian relationship"><input value={makerDraft.nominee.guardianRelationship} onChange={(event) => setMakerDraft((current) => ({ ...current, nominee: { ...current.nominee, guardianRelationship: event.target.value } }))} /></Field><Field label="Guardian contact" wide><input value={makerDraft.nominee.guardianContact} onChange={(event) => setMakerDraft((current) => ({ ...current, nominee: { ...current.nominee, guardianContact: event.target.value } }))} /></Field></>}
               </div>
 
               {makerDraft.nominees.map((nominee, index) => (

@@ -19,6 +19,35 @@ const normalizeMobile = (value) =>
 const isForcedEtbMobile = (mobile) =>
   normalizeMobile(mobile) === FORCED_ETB_MOBILE;
 
+// Generic Inline Logo Mark Component
+function BrandLogoMark() {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" rx="8" fill="#2563eb" />
+        <path
+          d="M10 22V10L16 16L22 10V22"
+          stroke="#ffffff"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      <span
+        style={{
+          fontSize: "1.1rem",
+          fontWeight: 700,
+          letterSpacing: "0.05em",
+          color: "#ffffff",
+          fontFamily: "sans-serif",
+        }}
+      >
+        APEX BANK
+      </span>
+    </div>
+  );
+}
+
 const BackIcon = () => (
   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
     <path d="M19 12H5" />
@@ -1147,11 +1176,7 @@ function ApplicationOnboardingPage({ onLogout }) {
             <BackIcon />
           </button>
 
-          <img
-            className="yes-bank-logo"
-            src="/images/yes-bank-logo-dark-bg.png"
-            alt="YES BANK"
-          />
+          <BrandLogoMark />
         </header>
 
         <main className="not-found-card">
@@ -1175,11 +1200,7 @@ function ApplicationOnboardingPage({ onLogout }) {
               <BackIcon />
             </button>
 
-            <img
-              className="yes-bank-logo"
-              src="/images/yes-bank-logo-dark-bg.png"
-              alt="YES BANK"
-            />
+            <BrandLogoMark />
 
             <span className="topbar-divider" />
 

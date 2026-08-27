@@ -368,6 +368,35 @@ const getActionForUser = (persona, applicationDetail) => {
   };
 };
 
+// Generic Inline Logo Mark Component
+function BrandLogoMark() {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" rx="8" fill="#2563eb" />
+        <path
+          d="M10 22V10L16 16L22 10V22"
+          stroke="#ffffff"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      <span
+        style={{
+          fontSize: "1.1rem",
+          fontWeight: 700,
+          letterSpacing: "0.05em",
+          color: "#ffffff",
+          fontFamily: "sans-serif",
+        }}
+      >
+        APEX BANK
+      </span>
+    </div>
+  );
+}
+
 const BackIcon = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true">
     <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -627,7 +656,6 @@ function ApplicationDetailPage({
           `${LEAD_API}/${encodeURIComponent(leadId)}`,
         );
 
-
         if (!response.ok) {
           throw new Error(`Unable to fetch lead (${response.status})`);
         }
@@ -641,8 +669,6 @@ function ApplicationDetailPage({
         if (cancelled) return;
 
         const record = payload.data || {};
-        // The lead APIs are not consistent in their casing. Preserve the JSON
-        // returned by either shape before handing it to every tab.
         const rawLeadDetails =
           record.lead_details ?? record.leadDetails ?? record.leaddetails ?? {};
         const parsedDetails = parseLeadDetails(rawLeadDetails);
@@ -760,8 +786,7 @@ function ApplicationDetailPage({
       setActiveTab(currentAction.tab);
       setRequestedSection(currentAction.section || "");
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lead]); // Only run once when lead first loads — persona and currentAction are stable at this point
+  }, [lead]);
 
   const activityEvents = Array.isArray(applicationDetail?.activity?.events)
     ? applicationDetail.activity.events
@@ -816,7 +841,7 @@ function ApplicationDetailPage({
             <span />
             <span />
           </div>
-          <p className="application-loading-eyebrow">YES BANK GOLD LOAN</p>
+          <p className="application-loading-eyebrow">APEX BANK GOLD LOAN</p>
           <h1>Loading application</h1>
           <p>Fetching the latest customer and workflow information.</p>
         </div>
@@ -894,11 +919,7 @@ function ApplicationDetailPage({
           >
             <BackIcon />
           </button>
-          <img
-            className="application-logo"
-            src="/images/yes-bank-logo-dark-bg.png"
-            alt="YES BANK"
-          />
+          <BrandLogoMark />
           <span className="application-topbar__divider" aria-hidden="true" />
           <div>
             <p className="application-topbar__title">Gold Loan Application</p>

@@ -41,7 +41,7 @@ const MOCK_CUSTOMERS = [
     firstName: "Shivanjali",
     lastName: "Gaikwad",
     fullName: "Shivanjali Gaikwad",
-    customerId: "YESC00918427",
+    customerId: "APEX00918427",
     aadhaarNumber: "312455018833",
     accountNumber: "102345678901",
     mobileNumber: "8552051111",
@@ -69,7 +69,7 @@ const MOCK_CUSTOMERS = [
     firstName: "Aarav",
     lastName: "Mehta",
     fullName: "Aarav Mehta",
-    customerId: "YESC00467231",
+    customerId: "APEX00467231",
     aadhaarNumber: "487263951742",
     accountNumber: "110023456789",
     mobileNumber: "9876543210",
@@ -101,8 +101,8 @@ const AUTHENTICATION_OPTIONS = {
     placeholder: "Enter 12-character Customer ID",
     inputMode: "text",
     maxLength: 12,
-    validate: (value) => /^YESC\d{8}$/i.test(value),
-    error: "Enter a valid Customer ID, for example YESC00918427.",
+    validate: (value) => /^APEX\d{8}$/i.test(value),
+    error: "Enter a valid Customer ID, for example APEX00918427.",
   },
   AADHAAR: {
     label: "Aadhaar Number",
@@ -334,7 +334,7 @@ const createReference = (prefix) =>
 const randomDigits = (length) =>
   Array.from({ length }, () => Math.floor(Math.random() * 10)).join("");
 
-const generateCustomerId = () => `YESC${randomDigits(8)}`;
+const generateCustomerId = () => `APEX${randomDigits(8)}`;
 
 const generateCasaNumber = () => randomDigits(12);
 
@@ -360,7 +360,7 @@ const buildConsentMessage = ({ consentUrl, customerName }) => {
   const salutation = customerName ? `Dear ${customerName},` : "Dear Customer,";
   return `${salutation}
 
-Thank you for choosing YES BANK Gold Loan.
+Thank you for choosing APEX BANK Gold Loan.
 
 To continue your application, please provide your consent for application processing, KYC/CBS verification, internal checks, and journey-related communication.
 
@@ -465,7 +465,7 @@ const buildBorrowerInformation = (customerType, customer, lead) => ({
     status: customerType === "ETB" ? "Reference generated" : "Pending",
     last4: customer.aadhaarLast4 || digitsOnly(customer.aadhaarNumber).slice(-4),
     referenceNumber:
-      customerType === "ETB" ? "AAD-REF-YB-4812" : "",
+      customerType === "ETB" ? "AAD-REF-APEX-4812" : "",
     processing: false,
   },
 });

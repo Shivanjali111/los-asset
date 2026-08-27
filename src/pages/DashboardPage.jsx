@@ -154,6 +154,24 @@ const AppIcon = ({ name, size = 18, className = "" }) => (
   </svg>
 );
 
+// Generic Inline Logo Mark Component
+function BrandLogoMark() {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" rx="8" fill="#2563eb" />
+        <path
+          d="M10 22V10L16 16L22 10V22"
+          stroke="#ffffff"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </div>
+  );
+}
+
 /* Static Data */
 
 const listViews = [
@@ -394,7 +412,7 @@ function DashboardPage({ leads = [], onCreateLead, onLogout }) {
       const newLeadId = onCreateLead ? onCreateLead(newLead) : newLead.id;
       navigate(`/applications/${newLeadId}/onboarding`);
     } catch (err) {
-      alert(err)
+      alert(err);
       setCreateLeadError(
         err.message || "An error occurred while creating the lead.",
       );
@@ -409,18 +427,10 @@ function DashboardPage({ leads = [], onCreateLead, onLogout }) {
       <aside className={`app-sidebar${isSidebarCollapsed ? " collapsed" : ""}`}>
         <div className="sidebar-brand">
           <div className="sidebar-logo">
-            <img
-              src={
-                isSidebarCollapsed
-                  ? "/images/yes-bank-logo-icon.png"
-                  : "/images/yes-bank-logo-dark-bg.png"
-              }
-              alt="YES BANK"
-              className="sidebar-logo-img"
-            />
+            <BrandLogoMark />
           </div>
           <div className="sidebar-brand-text">
-            <h2>Gold Loan Portal</h2>
+            <h2>Apex Bank Portal</h2>
             <p>Origination &amp; Appraisal</p>
           </div>
         </div>
@@ -475,7 +485,7 @@ function DashboardPage({ leads = [], onCreateLead, onLogout }) {
           <div className="dashboard-title-block">
             <span className="page-eyebrow">Branch Lending Workspace</span>
             <h1>Gold Loan Processing Dashboard</h1>
-            <p>Pune Camp Branch | {currentDateLabel}</p>
+            <p>Main Branch | {currentDateLabel}</p>
           </div>
 
           <div className="topbar-actions">
@@ -503,7 +513,7 @@ function DashboardPage({ leads = [], onCreateLead, onLogout }) {
           <div className="gold-hero-copy">
             <span className="gold-hero-kicker">
               <i aria-hidden="true" />
-              Pune Camp Branch | Live Operations
+              Main Branch | Live Operations
             </span>
             <h2>
               Complete every gold loan in{" "}
@@ -558,7 +568,7 @@ function DashboardPage({ leads = [], onCreateLead, onLogout }) {
             <span className="hero-gold-ring hero-ring-small" />
             <span className="hero-gold-coin hero-coin-one">916</span>
             <span className="hero-gold-coin hero-coin-two">24K</span>
-            <img src="/images/yes-bank-logo-icon.png" alt="" />
+            <BrandLogoMark />
             <b>*</b>
           </div>
         </section>
@@ -919,7 +929,7 @@ function DashboardPage({ leads = [], onCreateLead, onLogout }) {
                 </div>
                 <div className="drawer-product-copy">
                   <span>Selected product</span>
-                  <strong>YES BANK Gold Loan</strong>
+                  <strong>Apex Bank Gold Loan</strong>
                   <p>Fresh loan or renewal | 15-minute service</p>
                 </div>
                 <span className="drawer-stage-pill">

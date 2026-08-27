@@ -376,7 +376,7 @@ const buildLeadDetails = (lead = {}) => ({
   apsNumber: lead.apsNumber || "—",
   assignedTo: lead.assignedTo || "USR-1024",
   assignedToName: lead.assignedToName || lead.owner || "Sales User",
-  branchName: lead.branchName || "Pune Camp Branch",
+  branchName: lead.branchName || "Main Branch",
   consumerSystemName: lead.consumerSystemName || "Gold Loan Portal",
   countryCode: lead.countryCode || "+91",
   daysSinceLastActivity: lead.daysSinceLastActivity || "0",
@@ -439,14 +439,14 @@ const getRelationshipResult = (mobile) => {
     return {
       status: "matched",
       type: "ETB",
-      title: "Existing YES BANK customer match found",
+      title: "Existing customer match found",
       description:
         "A unique active CBS relationship was found using the registered mobile number.",
       customerId: "CIF-10028491",
       registeredEmail: "an••••••@gmail.com",
       kycStatus: "Valid",
       savingsAccount: "•••• 4421",
-      homeBranch: "Pune Camp Branch",
+      homeBranch: "Main Branch",
       nomineeStatus: "Available in CBS",
     };
   }
@@ -471,10 +471,7 @@ const validateEmailAddress = (email = "") => {
 };
 
 const buildEmailVerificationLink = ({ leadNumber, email }) => {
-  const baseUrl = window.location.origin;
-  const leadParam = encodeURIComponent(leadNumber || "");
   const emailParam = encodeURIComponent(email || "");
-
   return `https://main.d3prbk14vc3ef9.amplifyapp.com/email/${emailParam}`;
 };
 
@@ -1002,7 +999,7 @@ function Section({
   );
 }
 
-/* ══ SALESFORCE-STYLE STAGE PATH ══ */
+/* ══ STAGE PATH ══ */
 function StatusPath({ currentStatus, onStepClick }) {
   const activeIdx = STATUS_STEPS.indexOf(currentStatus);
   const isDisq = currentStatus === "Disqualified";
@@ -1095,7 +1092,7 @@ function CustomerRelationshipPanel({
           </h2>
           <p>
             {isChecking
-              ? "Searching YES BANK CBS using the lead’s registered mobile number."
+              ? "Searching CBS using the lead’s registered mobile number."
               : relationship.description}
           </p>
         </div>
@@ -1513,12 +1510,12 @@ function SendEmailPanel({
           <span className="email-field-lbl">From</span>
           <select
             className="form-select email-from-select"
-            value={form.from || "goldloan@yesbank.in"}
+            value={form.from || "goldloan@apexbank.com"}
             onChange={(e) => onChange("from", e.target.value)}
           >
-            <option>goldloan@yesbank.in</option>
-            <option>branch.support@yesbank.in</option>
-            <option>noreply@yesbank.in</option>
+            <option>goldloan@apexbank.com</option>
+            <option>branch.support@apexbank.com</option>
+            <option>noreply@apexbank.com</option>
           </select>
         </div>
       </div>
@@ -1962,9 +1959,6 @@ function LeadDetailPage({ onLogout, onConvertLead }) {
     handleResend,
   } = useVerificationState(leadData);
 
-  // ETB contact details are sourced from the existing CBS relationship and
-  // are therefore treated as verified. NTB customers keep the existing
-  // API/subscription-driven verification status.
   const isEtbCustomer = relationship.type === "ETB";
   const mobileVerified =
     isEtbCustomer || leadData.mobileVerified === "Yes";
@@ -2493,7 +2487,7 @@ function LeadDetailPage({ onLogout, onConvertLead }) {
     if (type === "email") {
       setPanelForm({
         to: leadData.email !== "Not captured" ? leadData.email : "",
-        from: "goldloan@yesbank.in",
+        from: "goldloan@apexbank.com",
       });
     }
   };
@@ -2571,13 +2565,8 @@ function LeadDetailPage({ onLogout, onConvertLead }) {
 
       <aside className={`app-sidebar${isSidebarCollapsed ? " collapsed" : ""}`}>
         <div className="sidebar-brand">
-          <img
-            className="sidebar-logo-image"
-            src="/images/yes-bank-logo-dark-bg.png"
-            alt="YES BANK"
-          />
           <div className="sidebar-brand-text">
-            <h2>Gold Loan Portal</h2>
+            <h2>Apex Bank Portal</h2>
             <p>Sales workspace</p>
           </div>
         </div>
@@ -2664,7 +2653,7 @@ function LeadDetailPage({ onLogout, onConvertLead }) {
                   )}
                 </div>
                 <p className="record-meta">
-                  YES BANK · {leadData.product} · {leadData.branchName}
+                  Apex Bank · {leadData.product} · {leadData.branchName}
                 </p>
                 <StatusPath
                   currentStatus={leadStatus}

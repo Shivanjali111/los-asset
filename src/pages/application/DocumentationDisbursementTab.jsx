@@ -983,7 +983,7 @@ export default function DocumentationDisbursementTab({
           <div aria-labelledby="document-preview-title" aria-modal="true" className="documentation-tab__modal" role="dialog">
             <div className="documentation-tab__modal-header"><div><span>Generated document</span><h3 id="document-preview-title">{activeDocument.name}</h3></div><button aria-label="Close preview" onClick={() => setActiveDocument(null)} type="button"><Icon name="close" /></button></div>
             <div className="documentation-tab__paper">
-              <div className="documentation-tab__paper-brand"><strong>YES BANK</strong><span>Gold Loan</span></div>
+              <div className="documentation-tab__paper-brand"><strong>APEX BANK</strong><span>Gold Loan</span></div>
               <h4>{activeDocument.name}</h4>
               <dl><div><dt>Application number</dt><dd>{context.applicationNumber}</dd></div><div><dt>Customer</dt><dd>{context.customerName}</dd></div><div><dt>Facility</dt><dd>{context.facilityLabel}</dd></div><div><dt>Sanctioned amount</dt><dd>{formatCurrency(context.loanAmount)}</dd></div><div><dt>Document reference</dt><dd>{activeDocument.documentReference}</dd></div></dl>
               <p>This system-generated preview is populated from the saved application, appraisal and checker sanction data.</p>

@@ -3,9 +3,34 @@ import { useNavigate } from "react-router-dom";
 import { signIn } from "aws-amplify/auth";
 import "./LoginPage.css";
 
-const YES_BANK_LOGO_DARK = "/images/yes-bank-logo-dark-bg.png";
-const YES_BANK_LOGO_LIGHT = "/images/yes-bank-logo-light-bg.png";
-const YES_BANK_LOGO_ICON = "/images/yes-bank-logo-icon.png";
+// Generic Inline SVG Logo Replacement (replaces image imports)
+function BrandLogo({ light = false }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" rx="8" fill={light ? "#2563eb" : "#ffffff"} />
+        <path
+          d="M10 22V10L16 16L22 10V22"
+          stroke={light ? "#ffffff" : "#0f172a"}
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      <span
+        style={{
+          fontSize: "1.25rem",
+          fontWeight: 700,
+          letterSpacing: "0.05em",
+          color: light ? "#0f172a" : "#ffffff",
+          fontFamily: "sans-serif",
+        }}
+      >
+        APEX BANK
+      </span>
+    </div>
+  );
+}
 
 function LoginPage({ onLoginSuccess }) {
   const navigate = useNavigate();
@@ -62,7 +87,7 @@ function LoginPage({ onLoginSuccess }) {
         "CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED"
       ) {
         setErrorMessage(
-          "This user requires a new password setup. Set a permanent password in Cognito or implement the new-password flow.",
+          "This user requires a new password setup. Set a permanent password in Cognito or implement the new-password flow."
         );
         return;
       }
@@ -70,12 +95,12 @@ function LoginPage({ onLoginSuccess }) {
       setErrorMessage(
         `Additional sign-in step required: ${
           result.nextStep?.signInStep || "Unknown step"
-        }`,
+        }`
       );
     } catch (error) {
       console.error("Cognito login failed:", error);
       setErrorMessage(
-        error.message || "Login failed. Please check your credentials.",
+        error.message || "Login failed. Please check your credentials."
       );
     } finally {
       setIsSubmitting(false);
@@ -101,11 +126,7 @@ function LoginPage({ onLoginSuccess }) {
 
         <header className="brand-header">
           <div className="yes-bank-logo-wrap">
-            <img
-              className="yes-bank-logo"
-              src={YES_BANK_LOGO_DARK}
-              alt="YES BANK"
-            />
+            <BrandLogo />
           </div>
           <div className="product-lockup">
             <span>Gold Loan</span>
@@ -216,7 +237,7 @@ function LoginPage({ onLoginSuccess }) {
         </div>
 
         <footer className="brand-footer">
-          <p>Life Ko Banao Rich</p>
+          <p>Empowering Financial Growth</p>
           <span>Secure • Compliant • Auditable</span>
         </footer>
       </section>
@@ -226,16 +247,10 @@ function LoginPage({ onLoginSuccess }) {
         <div className="form-background-ring-2" aria-hidden="true" />
         <span className="red-accent red-accent-one" aria-hidden="true" />
         <span className="red-accent red-accent-two" aria-hidden="true" />
-        <img
-          className="form-brand-mark"
-          src={YES_BANK_LOGO_ICON}
-          alt=""
-          aria-hidden="true"
-        />
 
         <div className="login-card">
           <div className="login-card-logo">
-            <img src={YES_BANK_LOGO_LIGHT} alt="YES BANK" />
+            <BrandLogo light />
           </div>
 
           <div className="login-card-header">
@@ -489,8 +504,8 @@ function LoginPage({ onLoginSuccess }) {
 
           <div className="login-footer">
             <p>
-              For authorized YES BANK users only. All activity is monitored and
-              recorded in line with the bank's security policies.
+              For authorized users only. All activity is monitored and
+              recorded in line with security policies.
             </p>
           </div>
         </div>
