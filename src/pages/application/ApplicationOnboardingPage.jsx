@@ -560,7 +560,7 @@ function ApplicationOnboardingPage({ onLogout }) {
             navigate(
               `/applications/${encodeURIComponent(
                 savedApplicationNumber
-              )}`,
+              )}?leadId=${encodeURIComponent(data.data.leadnumber)}`,
               {
                 replace: true,
                 state: {
@@ -1070,7 +1070,7 @@ function ApplicationOnboardingPage({ onLogout }) {
         navigate(
           `/applications/${encodeURIComponent(
             generatedNumber
-          )}`,
+          )}?leadId=${encodeURIComponent(lead?.id || leadId)}`,
           {
             replace: true,
             state: {

@@ -673,13 +673,6 @@ export default function DocumentationDisbursementTab({
   return (
     <section className="documentation-tab" aria-labelledby="documentation-tab-title">
 
-      <div className="documentation-tab__loan-strip" aria-label="Application summary">
-        <div><span>Application</span><strong>{context.applicationNumber}</strong></div>
-        <div><span>Customer</span><strong>{context.customerName}</strong></div>
-        <div><span>Sanctioned amount</span><strong>{formatCurrency(context.loanAmount)}</strong></div>
-        <div><span>Facility</span><strong>{context.facilityLabel}</strong></div>
-        <div><span>Credit account</span><strong>{context.accountNumber}</strong></div>
-      </div>
 
 
       <div className="documentation-tab__section-heading">
@@ -931,15 +924,38 @@ export default function DocumentationDisbursementTab({
       )}
 
       <div className={`documentation-tab__disbursement${alreadyDisbursed ? " is-complete" : ""}`}>
-        <div className="documentation-tab__disbursement-icon"><Icon name={alreadyDisbursed ? "check" : "bank"} size={26} /></div>
+        <div className="documentation-tab__disbursement-icon">
+          <Icon name={alreadyDisbursed ? "check" : "bank"} size={26} />
+        </div>
+        
         <div className="documentation-tab__disbursement-copy">
           <h3>{alreadyDisbursed ? "Disbursement completed" : "Final CBS disbursement"}</h3>
+          
+          {/* Detailed disbursement parameters directly in context */}
+          <div className="documentation-tab__disbursement-details">
+            <span><strong>Sanctioned:</strong> {formatCurrency(context.loanAmount)}</span>
+            <span className="dot">•</span>
+            <span><strong>Facility:</strong> {context.facilityLabel}</span>
+            <span className="dot">•</span>
+            <span><strong>Account:</strong> {selectedDisbursementAccount || context.accountNumber}</span>
+          </div>
+
           {alreadyDisbursed ? (
-            <p>{context.facilityType === "OD" ? "OD limit created in CBS" : `${formatCurrency('400000')} credited to ${workflow.disbursement.destinationAccount}`} · {workflow.disbursement.transactionReference} · {formatDateTime(workflow.disbursement.completedAt)}</p>
+            <p>
+              {context.facilityType === "OD"
+                ? "OD limit created in CBS"
+                : `${formatCurrency(context.loanAmount)} credited to ${workflow.disbursement.destinationAccount}`}{" "}
+              · {workflow.disbursement.transactionReference} · {formatDateTime(workflow.disbursement.completedAt)}
+            </p>
           ) : (
-            <p>{context.facilityType === "OD" ? `Create an OD limit of ${formatCurrency(context.loanAmount)} in CBS.` : `Credit ${formatCurrency(context.loanAmount)} to account ${selectedDisbursementAccount || context.accountNumber}.`}</p>
+            <p>
+              {context.facilityType === "OD"
+                ? `Create an OD limit of ${formatCurrency(context.loanAmount)} in CBS.`
+                : `Ready to initiate final transfer to the selected credit account.`}
+            </p>
           )}
         </div>
+
         {!alreadyDisbursed && (
           <button
             className="documentation-tab__button danger"
@@ -947,7 +963,8 @@ export default function DocumentationDisbursementTab({
             onClick={() => setShowDisbursementConfirm(true)}
             type="button"
           >
-            <Icon name="bank" />Disburse loan
+            <Icon name="bank" />
+            Disburse loan
           </button>
         )}
       </div>

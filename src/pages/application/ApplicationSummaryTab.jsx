@@ -521,14 +521,6 @@ export default function ApplicationSummaryTab({
 
   return (
     <div className="application-summary">
-      <div className="summary-page-header">
-        <div>
-          <span>APPLICATION SUMMARY</span>
-          <h2>{summary.applicationNumber || "Application details"}</h2>
-          <p>Customer, facility and supporting details captured during onboarding.</p>
-        </div>
-        {summary.status && <span className="summary-status">{summary.status}</span>}
-      </div>
 
       <div className="summary-content-columns">
         <section className="summary-section">

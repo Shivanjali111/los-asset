@@ -467,7 +467,7 @@ const buildView = (leadDetails, lead) => {
     requiredAmount: makerSource.requiredAmount || eligibilitySource.requiredAmount || 450000,
     recommendedAmount: makerSource.recommendedAmount || eligibilitySource.recommendedAmount || 440000,
     disbursementAccount: makerSource.disbursementAccount || loan.disbursementAccount || "",
-    makerComments: makerSource.makerComments || makerSource.comments || "Recommended based on verified net weight and applicable LTV.",
+    makerComments: makerSource.makerComments || makerSource.comments || "Recommended based on verified net weight and maximum applicable LTV.",
     eSignRequired:
       makerSource.eSignRequired === undefined
         ? true
@@ -919,18 +919,27 @@ export default function ApplicationDetailsTab({
     (item) => item.total > 0 || item.key === "goldOrnament" || item.key === "goldCoin",
   );
 
+  // Simple validation safeguard for non-negative values
   const validateAppraisal = () => {
     const errors = {};
     appraisalItems.forEach((item) => {
       if (!item.appraisal.purity) errors[`${item.id}.purity`] = "Select quality/purity.";
       if (!(toNumber(item.appraisal.grossWeight) > 0)) errors[`${item.id}.grossWeight`] = "Enter a valid gross weight.";
-      if (
-        toNumber(item.appraisal.grossWeight) > 0 &&
-        deductionTotalFor(item) >= toNumber(item.appraisal.grossWeight)
-      ) {
-        errors[`${item.id}.grossWeight`] =
-          "Total deductions must be lower than the gross weight.";
+      
+      const gross = toNumber(item.appraisal.grossWeight) || 0;
+      const deductions = deductionTotalFor(item);
+      if (gross > 0 && deductions >= gross) {
+        errors[`${item.id}.grossWeight`] = "Total deductions must be lower than the gross weight.";
       }
+      if (
+        toNumber(item.appraisal.stoneDeduction) < 0 ||
+        toNumber(item.appraisal.alloyDeduction) < 0 ||
+        toNumber(item.appraisal.fasteningDeduction) < 0 ||
+        toNumber(item.appraisal.otherDeduction) < 0
+      ) {
+        errors[`${item.id}.grossWeight`] = "Deductions cannot be negative values.";
+      }
+      
       if (item.appraisal.defectPresent === "Yes" && !item.appraisal.defectDescription.trim()) errors[`${item.id}.defectDescription`] = "Describe the defect.";
       if (!item.jewelImage?.dataUrl) errors[`${item.id}.jewelImage`] = "A jewellery image is required.";
       if (!item.appraisal.jewelleryMatchesImage) errors[`${item.id}.jewelleryMatchesImage`] = "Confirm that the jewellery is as per the image.";
@@ -1483,7 +1492,7 @@ export default function ApplicationDetailsTab({
               <span>Verified value</span>
             </article>
             <article>
-              <small>Applicable LTV</small>
+              <small>Maximum applicable LTV</small>
               <strong>{textValue(view.eligibility.applicableLtv)}%</strong>
               <span>Policy applied</span>
             </article>
@@ -1543,7 +1552,7 @@ export default function ApplicationDetailsTab({
                   </label>
                   <label className={!makerDraft.eSignRequired ? "is-selected" : ""}>
                     <input type="radio" name="documentExecution" checked={!makerDraft.eSignRequired} onChange={() => setMakerDraft((current) => ({ ...current, eSignRequired: false }))} />
-                    <span><strong>Physical signature</strong><small>Collect and upload the signed document after sanction.</small></span>
+                    <span><strong>Manual signature</strong><small>Collect and upload the signed document after sanction.</small></span>
                   </label>
                 </fieldset>
               </>
@@ -1552,7 +1561,7 @@ export default function ApplicationDetailsTab({
                 { label: "Customer requested amount", value: formatCurrency(view.eligibility.requiredAmount) },
                 { label: "Recommended amount", value: formatCurrency(view.eligibility.recommendedAmount) },
                 { label: "Disbursement account", value: view.eligibility.disbursementAccount || "Not applicable" },
-                { label: "Document execution", value: view.eligibility.eSignRequired ? "eSign" : "Physical signature" },
+                { label: "Document execution", value: view.eligibility.eSignRequired ? "eSign" : "Manual signature" },
                 { label: "Recommendation comments", value: view.eligibility.makerComments || "—", wide: true },
               ]} />
             )}
@@ -1773,16 +1782,6 @@ export default function ApplicationDetailsTab({
 
   return (
     <section className="details-tab" aria-labelledby="details-tab-title">
-      <div className="case-summary-bar">
-        <div className="case-summary-primary">
-          <small>Application</small>
-          <strong>{resolvedApplicationNumber || resolvedLeadId || "Gold Loan"}</strong>
-          <span>{view.customer.name} · {view.loan.branch.name}</span>
-        </div>
-        <div><small>Requested amount</small><strong>{formatCurrency(view.loan.requestedAmount)}</strong></div>
-        <div><small>Current status</small><Status value={view.application.status || sectionStatus(activeSection)} /></div>
-        <div><small>Assigned to</small><strong>{textValue(currentOwner)}</strong><span>{normalizedPersona === "Viewer" ? "Workflow owner" : `${normalizedPersona} view`}</span></div>
-      </div>
 
       <div className="details-mobile-section-picker">
         <label htmlFor="application-detail-section">Current step</label>

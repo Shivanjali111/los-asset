@@ -7,7 +7,6 @@ const SECTION_KEY = "eligibilitySupportingDetails";
 const CIBIL_SCORE = 725;
 const CIBIL_REPORT_PATH = "/docs/cibil-report.pdf";
 const CIBIL_REPORT_NAME = "cibil-report.pdf";
-const ELIGIBLE_LOAN_AMOUNT = 3500000;
 
 const CheckIcon = () => (
   <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.6" aria-hidden="true">
@@ -86,11 +85,11 @@ const formatDateTime = () =>
 
 const maskAccountNumber = (value) => {
   const raw = String(value || "").trim();
-  if (!raw) return "XXXX XXXX 4821";
+  if (!raw) return "N/A";
   if (/x|\*/i.test(raw)) return raw;
 
   const digits = raw.replace(/\D/g, "");
-  return digits.length >= 4 ? `XXXX XXXX ${digits.slice(-4)}` : "XXXX XXXX 4821";
+  return digits.length >= 4 ? `XXXX XXXX ${digits.slice(-4)}` : "N/A";
 };
 
 const isConsentCaptured = (status) =>
@@ -117,9 +116,15 @@ const hasRequiredLandData = (land) => {
   );
 };
 
+// CIBIL is optional, so it never blocks step completion
 const getStepCompletion = (step) => {
   const cibilComplete =
-    !step.cibil.required || step.cibil.status === "Completed";
+    !step.cibil.required ||
+    step.cibil.status === "Completed" ||
+    step.cibil.status === "Optional" ||
+    step.cibil.status === "Consent Available" ||
+    step.cibil.status === "Consent Required";
+
   const landComplete =
     !step.land.required ||
     (hasRequiredLandData(step.land.details) &&
@@ -128,23 +133,24 @@ const getStepCompletion = (step) => {
   return cibilComplete && landComplete;
 };
 
-const normalizeStep = ({ existing = {}, cibilRequired, landRequired, leadDetails }) => {
+const normalizeStep = ({ existing = {}, cibilRequired, landRequired, leadDetails, requestedAmount = 0 }) => {
   const identity = leadDetails.customerIdentity || {};
   const facility = leadDetails.facilityBranchLoanDetails || {};
   const consentStatus =
     identity.consentStatus || existing.cibil?.consentStatus || "Not Captured";
+  
   const accountValue =
     facility.accountDetails?.chargesDeductionAccountMasked ||
     facility.accountDetails?.casaAccountMasked ||
     facility.accounts?.chargesDeductionAccount?.maskedAccountNumber ||
     facility.chargesDeductionAccount?.accountNumber ||
     facility.casaAccount?.accountNumber ||
-    identity.chargesAccountMasked;
+    identity.chargesAccountMasked ||
+    "";
 
   const cibil = {
     required: cibilRequired,
-    triggerSource:
-      "facilityBranchLoanDetails.exposure.cibilRequired",
+    triggerSource: "facilityBranchLoanDetails.exposure.cibilRequired",
     consentStatus,
     consentReference:
       identity.consentReferenceNumber ||
@@ -159,21 +165,14 @@ const normalizeStep = ({ existing = {}, cibilRequired, landRequired, leadDetails
     chargeConfirmationStatus:
       existing.cibil?.chargeConfirmationStatus || "Not Confirmed",
     chargeConfirmedAt: existing.cibil?.chargeConfirmedAt || "",
-    status: cibilRequired
-      ? existing.cibil?.status === "Not Required"
-        ? isConsentCaptured(consentStatus)
-          ? "Consent Available"
-          : "Consent Required"
-        : existing.cibil?.status ||
-          (isConsentCaptured(consentStatus) ? "Consent Available" : "Consent Required")
-      : "Not Required",
+    status: existing.cibil?.status || (isConsentCaptured(consentStatus) ? "Consent Available" : "Consent Required"),
     score: existing.cibil?.score || "",
     reportName: existing.cibil?.reportName || "",
     reportPath: existing.cibil?.reportPath || "",
     fetchedAt: existing.cibil?.fetchedAt || "",
     assessmentOutcome: existing.cibil?.assessmentOutcome || "",
     eligibleLoanAmount: Number(
-      existing.cibil?.eligibleLoanAmount || ELIGIBLE_LOAN_AMOUNT
+      existing.cibil?.eligibleLoanAmount || requestedAmount
     ),
     evaluationBasis:
       existing.cibil?.evaluationBasis || "CIBIL score and CBS credit evaluation",
@@ -185,8 +184,7 @@ const normalizeStep = ({ existing = {}, cibilRequired, landRequired, leadDetails
 
   const land = {
     required: landRequired,
-    triggerSource:
-      "facilityBranchLoanDetails.exposure.landDetailsRequired",
+    triggerSource: "facilityBranchLoanDetails.exposure.landDetailsRequired",
     status: landRequired ? existing.land?.status || "Pending" : "Not Required",
     details: {
       ...INITIAL_LAND_DETAILS,
@@ -258,14 +256,12 @@ function EligibilitySupportingDetailsPage({
   const productData = facilityData.productFacilityAndScheme || {};
   const exposure = facilityData.exposure || {};
 
-  // These two stored flags are the only source of truth for conditional sections.
-  // BEFORE:
-  // const cibilRequired = exposure.cibilRequired === true;
   const landDetailsRequired = exposure.landDetailsRequired === true;
   const requestedLoanAmount = Number(
     exposure.requestedLoanAmount ??
       productData.requestedLoanAmount ??
       facilityData.requestedLoanAmount ??
+      lead?.requestedAmount ??
       0
   );
   const aggregateExposure = Number(
@@ -283,22 +279,15 @@ function EligibilitySupportingDetailsPage({
   const leadIdentity =
     lead?.id || lead?.leadId || lead?.leadNumber || lead?.leadnumber || "";
 
-  const customerIdentity = leadDetails.customerIdentity || {};
-  const relationship = customerIdentity.relationship || leadDetails.relationship || "";
-
-  const relationshipType = relationship.type || customerIdentity.type || leadDetails.customerType || "";
-
-  const isNTB = relationshipType === "NTB";
-
-  // AFTER: 
-  // NTB = Always required, ETB = Required if exposure.cibilRequired is true (> ₹1L / ₹2.5L)
-  const cibilRequired = isNTB ? true : exposure.cibilRequired === true;
+  // Set CIBIL requirement flag to false (Optional)
+  const cibilRequired = false;
 
   const initialStep = normalizeStep({
     existing: leadDetails[SECTION_KEY],
     cibilRequired,
     landRequired: landDetailsRequired,
     leadDetails,
+    requestedAmount: requestedLoanAmount,
   });
 
   const [stepData, setStepData] = useState(initialStep);
@@ -389,7 +378,6 @@ function EligibilitySupportingDetailsPage({
         return nextLead;
       });
 
-      // Every field/action change is persisted. The queue preserves request order.
       void persistStep(next);
     },
     [lead, leadIdentity, persistStep, setLead]
@@ -406,6 +394,7 @@ function EligibilitySupportingDetailsPage({
       cibilRequired,
       landRequired: landDetailsRequired,
       leadDetails,
+      requestedAmount: requestedLoanAmount,
     });
     stepDataRef.current = normalized;
     setStepData(normalized);
@@ -436,67 +425,10 @@ function EligibilitySupportingDetailsPage({
     leadIdentity,
     persistedStepSnapshot,
     persistStep,
+    requestedLoanAmount,
     lead,
     setLead,
   ]);
-
-  useEffect(() => {
-    const flagsChanged =
-      stepDataRef.current.cibil.required !== cibilRequired ||
-      stepDataRef.current.land.required !== landDetailsRequired;
-    if (!leadIdentity || !flagsChanged) return;
-
-    commitStep(
-      normalizeStep({
-        existing: stepDataRef.current,
-        cibilRequired,
-        landRequired: landDetailsRequired,
-        leadDetails,
-      })
-    );
-  }, [
-    cibilRequired,
-    commitStep,
-    landDetailsRequired,
-    leadDetails,
-    leadIdentity,
-  ]);
-
-  useEffect(() => {
-    if (!leadIdentity) return;
-    const identity = leadDetails.customerIdentity || {};
-    const nextConsentStatus = identity.consentStatus || "Not Captured";
-    const nextConsentReference =
-      identity.consentReferenceNumber || identity.consentReference || "";
-    const nextConsentCapturedAt = identity.consentCapturedAt || "";
-    const currentCibil = stepDataRef.current.cibil;
-
-    if (
-      currentCibil.consentStatus === nextConsentStatus &&
-      currentCibil.consentReference === nextConsentReference &&
-      currentCibil.consentCapturedAt === nextConsentCapturedAt
-    ) {
-      return;
-    }
-
-    commitStep(
-      (previous) => ({
-        ...previous,
-        cibil: {
-          ...previous.cibil,
-          consentStatus: nextConsentStatus,
-          consentReference: nextConsentReference,
-          consentCapturedAt: nextConsentCapturedAt,
-          status:
-            previous.cibil.status === "Completed"
-              ? "Completed"
-              : isConsentCaptured(nextConsentStatus)
-                ? "Consent Available"
-                : "Consent Required",
-        },
-      })
-    );
-  }, [commitStep, leadDetails.customerIdentity, leadIdentity]);
 
   useEffect(() => {
     updateStepStatus?.(stepId, stepData.stepStatus);
@@ -628,7 +560,7 @@ function EligibilitySupportingDetailsPage({
             fetchedAt: formatDateTime(),
             pullCompletedAt: formatDateTime(),
             assessmentOutcome: "Passed",
-            eligibleLoanAmount: ELIGIBLE_LOAN_AMOUNT,
+            eligibleLoanAmount: requestedLoanAmount || 3500000,
             evaluationBasis: "CIBIL score and CBS credit evaluation",
           },
         })
@@ -663,51 +595,52 @@ function EligibilitySupportingDetailsPage({
             <h3>Credit-bureau eligibility check</h3>
             <p>Requirement determined by the exposure decision completed in Facility, Branch &amp; Loan Details.</p>
           </div>
-          <span className={`esd-status ${cibilRequired ? "required" : "not-required"}`}>
-            {cibilRequired ? "Required" : "Not required"}
+          <span className="esd-status not-required">
+            Optional
           </span>
         </div>
 
-        {cibilRequired ? (
-          <div className="esd-cibil-workspace">
-            <div className={`esd-consent-summary ${consentAvailable ? "available" : "missing"}`}>
-              <span className="esd-consent-icon">{consentAvailable ? <CheckIcon /> : "!"}</span>
-              <div>
-                <strong>CIC consent: {stepData.cibil.consentStatus}</strong>
-                <p>
-                  {consentAvailable
-                    ? `Consent captured in Step 1${stepData.cibil.consentCapturedAt ? ` on ${stepData.cibil.consentCapturedAt}` : ""}${stepData.cibil.consentReference ? ` · Ref ${stepData.cibil.consentReference}` : ""}.`
-                    : "CIC consent must be captured in Step 1 before the bureau pull can begin."}
-                </p>
-              </div>
+        <div className="esd-cibil-workspace">
+          <div className={`esd-consent-summary ${consentAvailable ? "available" : "missing"}`}>
+            <span className="esd-consent-icon">{consentAvailable ? <CheckIcon /> : "!"}</span>
+            <div>
+              <strong>CIC consent: {stepData.cibil.consentStatus}</strong>
+              <p>
+                {consentAvailable
+                  ? `Consent captured in Step 1${stepData.cibil.consentCapturedAt ? ` on ${stepData.cibil.consentCapturedAt}` : ""}${stepData.cibil.consentReference ? ` · Ref ${stepData.cibil.consentReference}` : ""}.`
+                  : "CIC consent is optional. You may pull CIBIL report if consent is captured, or proceed without bureau check."}
+              </p>
             </div>
+          </div>
 
-            <div className="esd-cibil-card">
-              <span className="esd-shield"><ShieldIcon /></span>
-              <div>
-                <span>BUREAU STATUS</span>
-                <strong>{stepData.cibil.status}</strong>
-                <p>
-                  {stepData.cibil.status === "Completed"
-                    ? `Report fetched on ${stepData.cibil.fetchedAt}.`
-                    : `Applicable bureau charges will be deducted from ${stepData.cibil.chargesAccountMasked}.`}
-                </p>
-              </div>
-              <button
-                type="button"
-                disabled={!consentAvailable || pullingCibil || stepData.cibil.status === "Completed"}
-                onClick={openChargeConfirmation}
-              >
-                {pullingCibil
-                  ? "Generating report…"
-                  : stepData.cibil.status === "Completed"
-                    ? "Report generated"
-                    : "Pull CIBIL report"}
-              </button>
+          <div className="esd-cibil-card">
+            <span className="esd-shield"><ShieldIcon /></span>
+            <div>
+              <span>BUREAU STATUS</span>
+              <strong>{stepData.cibil.status}</strong>
+              <p>
+                {stepData.cibil.status === "Completed"
+                  ? `Report fetched on ${stepData.cibil.fetchedAt}.`
+                  : stepData.cibil.chargesAccountMasked && stepData.cibil.chargesAccountMasked !== "N/A"
+                    ? `Applicable bureau charges will be deducted from ${stepData.cibil.chargesAccountMasked}.`
+                    : "Pulling a CIBIL report is optional for this application."}
+              </p>
             </div>
+            <button
+              type="button"
+              disabled={!consentAvailable || pullingCibil || stepData.cibil.status === "Completed"}
+              onClick={openChargeConfirmation}
+            >
+              {pullingCibil
+                ? "Generating report…"
+                : stepData.cibil.status === "Completed"
+                  ? "Report generated"
+                  : "Pull CIBIL report (Optional)"}
+            </button>
+          </div>
 
-            {stepData.cibil.status === "Completed" && (
-              <>
+          {stepData.cibil.status === "Completed" && (
+            <>
               <div className="esd-result-grid">
                 <div><span>CIBIL score</span><strong>{stepData.cibil.score}</strong><small>Good credit profile</small></div>
                 <div>
@@ -717,48 +650,38 @@ function EligibilitySupportingDetailsPage({
                 </div>
                 <div><span>Assessment outcome</span><strong className="success-text">{stepData.cibil.assessmentOutcome}</strong><small>No blocking bureau rule</small></div>
               </div>
-              {/* PRE-FILLED ELIGIBILITY BANNER */}
+
               <div className="esd-eligibility-banner" role="status">
                 <span className="esd-eligibility-banner-icon">
                   <CheckIcon />
                 </span>
                 <div className="esd-eligibility-banner-text">
                   <strong>
-                    You are eligible for loan amount of {formatCurrency(stepData.cibil.eligibleLoanAmount)} (₹35 Lakhs)
-                    (As per bank's internal policy)
+                    You are eligible for loan amount of {formatCurrency(stepData.cibil.eligibleLoanAmount)}
                   </strong>
                   <p>
                     Based on CIBIL score ({stepData.cibil.score}) and CBS credit evaluation.
                   </p>
                 </div>
               </div>
-              </>
-            )}
-          </div>
-        ) : (
-          <div className="esd-not-required">
-            <CheckIcon />
-            <div>
-              <strong>No bureau pull required</strong>
-              <p>Step 2 saved <code>exposure.cibilRequired</code> as false. No charges will be deducted and this section is complete.</p>
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </div>
       </section>
 
       {landDetailsRequired && (
-      <section className="esd-section">
-        <div className="esd-section-heading">
-          <span className="esd-section-icon"><FileIcon /></span>
-          <div>
-            <span>02 · AGRI SUPPORTING DETAILS</span>
-            <h3>Land and crop information</h3>
-            <p>Requirement determined by the land-details decision saved with Step 2 exposure.</p>
+        <section className="esd-section">
+          <div className="esd-section-heading">
+            <span className="esd-section-icon"><FileIcon /></span>
+            <div>
+              <span>02 · AGRI SUPPORTING DETAILS</span>
+              <h3>Land and crop information</h3>
+              <p>Requirement determined by the land-details decision saved with Step 2 exposure.</p>
+            </div>
+            <span className="esd-status required">Required</span>
           </div>
-          <span className="esd-status required">Required</span>
-        </div>
 
-        <div className="esd-land-workspace">
+          <div className="esd-land-workspace">
             <div className="esd-info-strip">
               <FileIcon />
               <div><strong>Agricultural evidence required</strong><p>Complete the land particulars and upload at least one qualifying land record.</p></div>
@@ -792,15 +715,15 @@ function EligibilitySupportingDetailsPage({
                 required={false}
               />
             </div>
-        </div>
-      </section>
+          </div>
+        </section>
       )}
 
       <div className={`esd-readiness ${stepComplete ? "ready" : "pending"}`}>
         <span>{stepComplete ? <CheckIcon /> : "!"}</span>
         <div>
           <strong>{stepComplete ? "Eligibility and supporting details are complete" : "Complete the applicable conditional requirements"}</strong>
-          <p>{stepComplete ? "Proceed to Jewellery Details & Submission." : "Complete the required CIBIL assessment and/or land evidence before continuing."}</p>
+          <p>{stepComplete ? "Proceed to Jewellery Details & Submission." : "Complete the required land evidence or conditional fields before continuing."}</p>
         </div>
       </div>
 

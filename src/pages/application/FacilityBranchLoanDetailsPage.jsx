@@ -114,33 +114,49 @@ const FACILITY_OPTIONS = {
     purposes: ["Marriage", "Medical", "Personal Needs", "Others"],
     schemes: [
       {
-        name: "Gold Plus",
+        name: "Term Loan",
         tenureOptions: ["6 Months", "12 Months", "18 Months"],
-        repaymentTypes: ["EMI", "Quarterly", "Monthly Interest"],
+        repaymentTypes: ["EMI", "Quarterly", "Bullet"],
       },
       {
-        name: "Gold Advantage",
+        name: "Over Draft",
         tenureOptions: ["6 Months", "9 Months", "12 Months"],
-        repaymentTypes: ["EMI", "Quarterly", "Monthly Interest"],
+        repaymentTypes: ["EMI", "Quarterly", "Bullet"],
       },
     ],
   },
   Agri: {
     label: "Agri Gold Loan",
-    purposes: ["Land Development", "Cultivation Requirement"],
+    purposes: ["Land Development", "Cultivation Requirement", "Agriculture allied activities"],
     schemes: [
       {
-        name: "Gold Plus",
-        tenureOptions: ["6 Months", "9 Months", "12 Months"],
-        repaymentTypes: ["EMI", "Monthly interest, principal at maturity"],
+        name: "Term Loan",
+        tenureOptions: ["6 Months", "12 Months", "18 Months"],
+        repaymentTypes: ["EMI", "Quarterly", "Bullet"],
       },
       {
-        name: "Gold Advantage",
-        tenureOptions: ["12 Months", "18 Months", "24 Months"],
-        repaymentTypes: ["EMI", "Monthly interest, principal at maturity"],
+        name: "Over Draft",
+        tenureOptions: ["6 Months", "9 Months", "12 Months"],
+        repaymentTypes: ["EMI", "Quarterly", "Bullet"],
       },
     ],
   },
+  MSME : {
+    label: "MSME Gold Loan",
+    purposes: ["Working Capital", "Equipment Purchase", "Inventory Financing"],
+    schemes: [
+      {
+        name: "Term Loan",
+        tenureOptions: ["6 Months", "12 Months", "18 Months"],
+        repaymentTypes: ["EMI", "Quarterly", "Bullet"],
+      },
+      {
+        name: "Over Draft",
+        tenureOptions: ["6 Months", "9 Months", "12 Months"],
+        repaymentTypes: ["EMI", "Quarterly", "Bullet"],
+      },
+    ],
+  }
 };
 
 const JEWELLERY_TYPES = [

@@ -704,7 +704,7 @@ function DashboardPage({ leads = [], onCreateLead, onLogout }) {
                           <button
                             type="button"
                             className="lead-link-button"
-                            onClick={() => navigate(`/applications/${lead.id}/onboarding`)}
+                            onClick={() => navigate(`/applications/${lead.id}/onboarding?leadId=${encodeURIComponent(lead.id)}`)}
                           >
                             {lead.id}
                           </button>

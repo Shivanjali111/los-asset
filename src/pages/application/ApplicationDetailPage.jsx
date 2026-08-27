@@ -29,6 +29,13 @@ const PERSONA_BY_EMAIL = {
   "shivgaikwad@deloitte.com": "Maker",
 };
 
+const hasText = (val) =>
+  val !== undefined &&
+  val !== null &&
+  val !== "" &&
+  val !== "—" &&
+  val !== "Scheme not selected";
+
 const TABS = [
   { id: "summary", label: "Application Details" },
   { id: "details", label: "Appraiser and Sanction" },
@@ -840,6 +847,41 @@ function ApplicationDetailPage({
     );
   }
 
+  // 1. Resolve Requested Amount across all possible payload paths
+  const resolvedRequestedAmount =
+    applicationDetail.requestedAmount ||
+    lead?.leadDetails?.facilityBranchLoanDetails?.requestedLoanAmount ||
+    lead?.leadDetails?.facilityBranchLoanDetails?.exposure?.requestedLoanAmount ||
+    lead?.leadDetails?.facilityBranchLoanDetails?.productFacilityAndScheme?.requestedLoanAmount ||
+    lead?.leadDetails?.applicationDetail?.details?.eligibilityRecommendation?.requiredAmount ||
+    lead?.requestedAmount ||
+    lead?.amount;
+
+  // 2. Resolve Servicing Branch across all possible payload paths
+  const resolvedServicingBranch =
+    applicationDetail.branch?.name ||
+    applicationDetail.branch?.branchName ||
+    lead?.leadDetails?.facilityBranchLoanDetails?.selectedBranch?.branchName ||
+    lead?.leadDetails?.facilityBranchLoanDetails?.selectedBranch?.name ||
+    lead?.leadDetails?.facilityBranchLoanDetails?.branch?.branchName ||
+    lead?.leadDetails?.facilityBranchLoanDetails?.branch?.name ||
+    lead?.leadDetails?.facilityBranchLoanDetails?.branchSelection?.selectedBranch?.name ||
+    lead?.leadDetails?.facilityBranchLoanDetails?.branchSelection?.selectedBranch?.branchName ||
+    lead?.homeBranch?.branchName ||
+    lead?.homeBranch?.name ||
+    lead?.branch?.branchName ||
+    lead?.branch?.name ||
+    lead?.branchName ||
+    lead?.branch;
+
+  // 3. Resolve Relationship Type
+  const resolvedRelationshipType =
+    lead?.relationshipType ||
+    lead?.leadDetails?.relationshipType ||
+    lead?.leadDetails?.customerIdentity?.relationshipType ||
+    lead?.leadDetails?.customerIdentity?.type ||
+    "NTB";
+
   return (
     <div className="application-detail-page">
       <header className="application-topbar">
@@ -891,6 +933,7 @@ function ApplicationDetailPage({
       </header>
 
       <main className="application-page-content">
+        {/* Top Context Banner */}
         <section className="application-context-header">
           <div className="application-context-header__main">
             <div className="application-context-eyebrow">
@@ -901,14 +944,26 @@ function ApplicationDetailPage({
               <div>
                 <h1>{customerName}</h1>
                 <p>
-                  {applicationDetail.facility || lead?.product || "Gold Loan"}
+                  {[
+                    applicationDetail.facility,
+                    lead?.leadDetails?.facilityBranchLoanDetails?.facilityType,
+                    lead?.leadDetails?.facilityBranchLoanDetails?.productFacilityAndScheme?.productLabel,
+                    lead?.product,
+                  ].find(hasText) || "Gold Loan"}
                   <span aria-hidden="true"> · </span>
-                  {applicationDetail.scheme || "Scheme not selected"}
+                  {[
+                    applicationDetail.scheme,
+                    lead?.leadDetails?.facilityBranchLoanDetails?.scheme?.name,
+                    lead?.leadDetails?.facilityBranchLoanDetails?.scheme,
+                    lead?.leadDetails?.facilityBranchLoanDetails?.schemeName,
+                    lead?.leadDetails?.facilityBranchLoanDetails?.productFacilityAndScheme?.schemeName,
+                    lead?.leadDetails?.applicationDetail?.details?.eligibilityRecommendation?.scheme,
+                  ].find(hasText) || "Standard Term Loan"}
                 </p>
               </div>
               <div className="application-header-badges">
                 <span className="application-badge relationship">
-                  {lead?.relationshipType || "ETB/NTB pending"}
+                  {resolvedRelationshipType}
                 </span>
                 <span className="application-badge status">
                   {applicationDetail.status || lead?.status || "In progress"}
@@ -920,22 +975,11 @@ function ApplicationDetailPage({
           <dl className="application-context-metrics">
             <div>
               <dt>Requested amount</dt>
-              <dd>
-                {formatCurrency(
-                  applicationDetail.requestedAmount ||
-                    lead?.leadDetails?.facilityBranchLoanDetails
-                      ?.requestedLoanAmount,
-                )}
-              </dd>
+              <dd>{formatCurrency(resolvedRequestedAmount)}</dd>
             </div>
             <div>
               <dt>Servicing branch</dt>
-              <dd>
-                {applicationDetail.branch?.name ||
-                  lead?.homeBranch?.name ||
-                  lead?.homeBranch?.branchName ||
-                  "—"}
-              </dd>
+              <dd>{resolvedServicingBranch || "—"}</dd>
             </div>
             <div>
               <dt>Current owner</dt>
@@ -943,7 +987,7 @@ function ApplicationDetailPage({
                 {applicationDetail.assignment?.currentOwner ||
                   applicationDetail.currentOwner ||
                   lead?.owner ||
-                  "—"}
+                  "Branch Maker"}
               </dd>
             </div>
           </dl>
