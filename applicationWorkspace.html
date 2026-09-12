@@ -1,0 +1,955 @@
+<template>
+    <div class="workspace-shell">
+
+
+
+
+
+        <!-- =========================================================
+             APPLICATION MASTHEAD
+        ========================================================== -->
+        <section class="application-masthead">
+            <div class="masthead-main">
+                <div class="masthead-identity">
+                    <div class="masthead-icon">
+                        <lightning-icon
+                            icon-name="utility:company"
+                            size="small"
+                            variant="inverse"
+                            alternative-text="Business">
+                        </lightning-icon>
+                    </div>
+
+                    <div class="masthead-copy">
+                        <div class="masthead-eyebrow">
+                            <span class="masthead-eyebrow-text">MSME onboarding</span>
+                            <span class="masthead-eyebrow-sep"></span>
+                            <span class="masthead-tag">
+                                <lightning-icon
+                                    icon-name="utility:link"
+                                    size="xx-small">
+                                </lightning-icon>
+                                Aggregator lead
+                            </span>
+                            <span class="masthead-eyebrow-sep"></span>
+                            <span class="masthead-eyebrow-text">Retail, Small MSME</span>
+                        </div>
+
+                        <div class="masthead-title-row">
+                            <h1>Ekaanta Supermarket</h1>
+
+                            <div class={headerStatusClass}>
+                                <span class="header-status-dot"></span>
+                                <span>{headerStatus}</span>
+                            </div>
+                        </div>
+
+                        <div class="masthead-meta">
+                            <span>
+                                <lightning-icon icon-name="utility:money" size="xx-small"></lightning-icon>
+                                ₹45,00,000 requested
+                            </span>
+
+                            <span class="masthead-separator"></span>
+
+                            <span>
+                                <lightning-icon icon-name="utility:user" size="xx-small"></lightning-icon>
+                                Meera Jain
+                            </span>
+
+                            <span class="masthead-separator"></span>
+
+                            <span>
+                                <lightning-icon icon-name="utility:people" size="xx-small"></lightning-icon>
+                                RM Ananya Deshmukh
+                            </span>
+
+                            <span class="masthead-separator"></span>
+
+                            <span>
+                                <lightning-icon icon-name="utility:chart" size="xx-small"></lightning-icon>
+                                ₹4.20 Cr turnover
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="masthead-dependency">
+                    <div class="masthead-dependency-icon">
+                        <lightning-icon icon-name="utility:clock" size="x-small"></lightning-icon>
+                    </div>
+
+                    <div>
+                        <span>Waiting on</span>
+                        <strong>{dependencySummary}</strong>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             3 COLUMN WORKSPACE
+        ========================================================== -->
+        <div class="workspace-grid">
+
+            <!-- =====================================================
+                 LEFT - ONBOARDING JOURNEY
+            ====================================================== -->
+            <aside class="journey-panel">
+                <div class="journey-panel-head">
+                    <div>
+                        <span class="journey-panel-label">Onboarding</span>
+                        <h2>Application journey</h2>
+                    </div>
+
+                    <span class="journey-progress-count">
+                        {completedStepCount}/5
+                    </span>
+                </div>
+
+                <nav class="journey-stage-list" aria-label="Onboarding navigation">
+                    <template for:each={steps} for:item="step">
+                        <button
+                            key={step.id}
+                            class={step.cssClass}
+                            data-step={step.id}
+                            onclick={handleStepClick}
+                            title={step.label}>
+
+                            <span class="stage-leading">
+                                <span class="stage-number">
+                                    0{step.number}
+                                </span>
+
+                                <span class={step.markerClass}>
+                                    <template if:true={step.showCheck}>
+                                        <lightning-icon
+                                            icon-name="utility:check"
+                                            size="xx-small">
+                                        </lightning-icon>
+                                    </template>
+
+                                    <template if:false={step.showCheck}>
+                                        <lightning-icon
+                                            icon-name={step.icon}
+                                            size="x-small">
+                                        </lightning-icon>
+                                    </template>
+                                </span>
+                            </span>
+
+                            <span class="stage-content">
+                                <span class="stage-title-row">
+                                    <strong class="stage-title">{step.label}</strong>
+
+                                    <span class={step.statusClass}>
+                                        {step.statusText}
+                                    </span>
+                                </span>
+
+                                <span class="stage-detail">
+                                    {step.detail}
+                                </span>
+                            </span>
+
+                            <span class="stage-trailing">
+                                <span class="stage-chevron-wrap">
+                                    <lightning-icon
+                                        icon-name="utility:chevronright"
+                                        size="xx-small">
+                                    </lightning-icon>
+                                </span>
+                            </span>
+                        </button>
+                    </template>
+                </nav>
+            </aside>
+
+            <!-- =====================================================
+                 CENTER - STEP CONTENT + RM attention
+            ====================================================== -->
+            <main class="main-workspace">
+
+                <!-- STEP PLACEHOLDER -->
+                <section class="main-card step-stage-card">
+                    <div class="step-workspace-heading">
+                        <div class="step-workspace-identity">
+                            <div class="step-workspace-icon">
+                                <lightning-icon
+                                    icon-name={selectedStepIcon}
+                                    size="small">
+                                </lightning-icon>
+                            </div>
+
+                            <div class="step-workspace-copy">
+                                <div class="step-workspace-context">
+                                    <span>Onboarding</span>
+                                    <span class="step-workspace-dot">•</span>
+                                    <span>Step {selectedStep.number} of 5</span>
+                                </div>
+
+                                <div class="step-workspace-title-row">
+                                    <h2>{selectedStep.label}</h2>
+
+                                    <span class={selectedStepStatusClass}>
+                                        {selectedStepStatus}
+                                    </span>
+                                </div>
+
+                                <p>{selectedStep.detail}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step-stage-placeholder">
+                        <div class="placeholder-content">
+                            <span class="placeholder-kicker">Step workspace</span>
+                            <h3>{selectedStep.label}</h3>
+                            <p>{selectedStepSubtitle}</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SCREEN 2+ RM attention -->
+                <template if:true={showRmAttentionSection}>
+                    <section class={rmAttentionSectionClass}>
+
+                        <div class="rm-attention-header">
+                            <div class="rm-attention-title">
+                                <div class="rm-attention-icon">
+                                    <lightning-icon
+                                        icon-name="utility:warning"
+                                        size="small">
+                                    </lightning-icon>
+                                </div>
+
+                                <div>
+                                    <div class="rm-heading-row">
+                                        <span class="section-overline">RM attention</span>
+                                        <span class={rmAttentionBadgeClass}>
+                                            {rmAttentionBadge}
+                                        </span>
+                                        <h2>{rmAttentionTitle}</h2>
+                                    </div>
+                                    <p>{rmAttentionSubtitle}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SCREEN 2 -->
+                        <template if:true={isScreen2}>
+                            <div class="no-action-panel">
+                                <div class="no-action-icon">
+                                    <lightning-icon
+                                        icon-name="utility:check"
+                                        size="small">
+                                    </lightning-icon>
+                                </div>
+
+                                <div>
+                                    <h3>No action required at this stage</h3>
+                                    <p>
+                                        Customer-side onboarding is still in progress.
+                                        AVA will consolidate only judgement-based items after document validation.
+                                    </p>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- SCREEN 3 -->
+                        <template if:true={isScreen3}>
+
+                            <!-- REVIEW SUMMARY -->
+                            <div class="review-summary">
+                                <div class="review-summary-item">
+                                    <span class="review-summary-number review-summary-number--attention">
+                                        {remainingRmActions}
+                                    </span>
+                                    <div>
+                                        <strong>RM Actions</strong>
+                                        <span>Remaining RM actions</span>
+                                    </div>
+                                </div>
+
+                                <div class="review-summary-divider"></div>
+
+                                <div class="review-summary-item">
+                                    <span class="review-summary-number review-summary-number--success">
+                                        {resolvedByAvaCount}
+                                    </span>
+                                    <div>
+                                        <strong>Resolved by AVA</strong>
+                                        <span>Resolved · no RM action needed</span>
+                                    </div>
+                                </div>
+
+                                <div class="review-summary-divider"></div>
+
+                                <div class="review-summary-item">
+                                    <span class="review-summary-number">0</span>
+                                    <div>
+                                        <strong>Customer Actions</strong>
+                                        <span>Customer onboarding complete</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Resolved by AVA -->
+                            <div class="resolved-intelligence-block">
+                                <div class="subsection-heading">
+                                    <div>
+                                        <span class="subsection-kicker">Resolved by AVA</span>
+                                        <h3>Validated without RM intervention</h3>
+                                    </div>
+
+                                    <span class="resolved-count">
+                                        {resolvedByAvaCount} resolved
+                                    </span>
+                                </div>
+
+                                <div class="resolved-list">
+                                    <article class="resolved-row">
+                                        <div class="resolved-check">
+                                            <lightning-icon
+                                                icon-name="utility:check"
+                                                size="xx-small">
+                                            </lightning-icon>
+                                        </div>
+
+                                        <div class="resolved-row-copy">
+                                            <strong>Purpose classified as Working Capital</strong>
+                                            <p>
+                                                Customer clarified that the ₹45L requirement is for inventory
+                                                and supplier payments; store fit-out is self-funded.
+                                            </p>
+                                        </div>
+
+                                        <span class="evidence-link">Conversation evidence</span>
+                                    </article>
+
+                                    <article class="resolved-row">
+                                        <div class="resolved-check">
+                                            <lightning-icon
+                                                icon-name="utility:check"
+                                                size="xx-small">
+                                            </lightning-icon>
+                                        </div>
+
+                                        <div class="resolved-row-copy">
+                                            <strong>Business name variation reconciled</strong>
+                                            <p>
+                                                “Ekaanta Supermarket” on GST and “Ekaanta Super Market” on Udyam
+                                                are linked to the same business context.
+                                            </p>
+                                        </div>
+
+                                        <span class="evidence-link">GST + Udyam</span>
+                                    </article>
+
+                                    <article class="resolved-row">
+                                        <div class="resolved-check">
+                                            <lightning-icon
+                                                icon-name="utility:check"
+                                                size="xx-small">
+                                            </lightning-icon>
+                                        </div>
+
+                                        <div class="resolved-row-copy">
+                                            <strong>Partner structure reconciled</strong>
+                                            <p>
+                                                Captured ownership is supported by the uploaded partnership deed.
+                                            </p>
+                                        </div>
+
+                                        <span class="evidence-link">Partnership deed</span>
+                                    </article>
+                                </div>
+                            </div>
+
+                            <!-- Action required -->
+                            <div class="action-required-block">
+                                <div class="subsection-heading">
+                                    <div>
+                                        <span class="subsection-kicker subsection-kicker--attention">
+                                            Action required
+                                        </span>
+                                        <h3>Items requiring RM judgement</h3>
+                                    </div>
+                                </div>
+
+                                <!-- ACTION 1 -->
+                                <article class={facilityCardClass}>
+                                    <div class="action-card-header">
+                                        <div class="action-title-wrap">
+                                            <span class="action-index">01</span>
+
+                                            <div>
+                                                <div class="action-title-row">
+                                                    <h3>Facility Confirmation</h3>
+                                                    <span class={facilityStatusClass}>
+                                                        {facilityStatusLabel}
+                                                    </span>
+                                                </div>
+
+                                                <p>
+                                                    Purpose has been classified by AVA.
+                                                    Facility selection requires RM confirmation.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="decision-layout">
+                                        <div class="decision-evidence">
+                                            <div class="decision-row">
+                                                <span>Aggregator input</span>
+                                                <strong>Store expansion</strong>
+                                            </div>
+
+                                            <div class="decision-row">
+                                                <span>Customer clarification</span>
+                                                <strong>
+                                                    ₹45L for incremental inventory and supplier payments;
+                                                    fit-out is self-funded.
+                                                </strong>
+                                            </div>
+
+                                            <div class="decision-row">
+                                                <span>AVA interpretation</span>
+                                                <strong>Working Capital</strong>
+                                            </div>
+                                        </div>
+
+                                        <div class="decision-recommendation">
+                                            <span class="recommendation-eyebrow">
+                                                AVA recommendation
+                                            </span>
+
+                                            <div class="recommended-value">
+                                                <lightning-icon
+                                                    icon-name="utility:money"
+                                                    size="small">
+                                                </lightning-icon>
+
+                                                <div>
+                                                    <span>Suggested Facility</span>
+                                                    <strong>{selectedFacility}</strong>
+                                                </div>
+                                            </div>
+
+                                            <template if:false={facilityResolved}>
+                                                <template if:false={isChangingFacility}>
+                                                    <div class="decision-actions">
+                                                        <lightning-button
+                                                            label={confirmFacilityLabel}
+                                                            icon-name="utility:check"
+                                                            variant="brand"
+                                                            onclick={handleConfirmFacility}>
+                                                        </lightning-button>
+
+                                                        <lightning-button
+                                                            label="Change Facility"
+                                                            icon-name="utility:edit"
+                                                            variant="neutral"
+                                                            onclick={handleChangeFacility}>
+                                                        </lightning-button>
+                                                    </div>
+                                                </template>
+
+                                                <template if:true={isChangingFacility}>
+                                                    <div class="facility-editor">
+                                                        <span class="facility-editor-label">
+                                                            Select facility
+                                                        </span>
+
+                                                        <lightning-combobox
+                                                            name="facility"
+                                                            value={draftFacility}
+                                                            options={facilityOptions}
+                                                            onchange={handleFacilitySelection}
+                                                            variant="label-hidden">
+                                                        </lightning-combobox>
+
+                                                        <div class="facility-editor-actions">
+                                                            <lightning-button
+                                                                label="Cancel"
+                                                                variant="neutral"
+                                                                onclick={handleCancelFacilityChange}>
+                                                            </lightning-button>
+
+                                                            <lightning-button
+                                                                label="Apply Facility"
+                                                                variant="brand"
+                                                                onclick={handleApplyFacilityChange}>
+                                                            </lightning-button>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                    <template if:true={facilityResolved}>
+                                        <div class="resolved-action-record">
+                                            <div class="resolved-action-icon">
+                                                <lightning-icon
+                                                    icon-name="utility:check"
+                                                    size="xx-small">
+                                                </lightning-icon>
+                                            </div>
+
+                                            <div>
+                                                <span class="resolved-action-label">
+                                                    RM decision
+                                                </span>
+                                                <strong>{selectedFacility} confirmed</strong>
+                                                <p>
+                                                    Facility selection has been added to the onboarding record.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </article>
+
+                                <!-- ACTION 2 -->
+                                <article class={addressCardClass}>
+                                    <div class="action-card-header">
+                                        <div class="action-title-wrap">
+                                            <span class="action-index">02</span>
+
+                                            <div>
+                                                <div class="action-title-row">
+                                                    <h3>Business Address / Alternate Document Exception</h3>
+                                                    <span class={addressStatusClass}>
+                                                        {addressStatusLabel}
+                                                    </span>
+                                                </div>
+
+                                                <p>
+                                                    Current operating address is supported by alternate evidence,
+                                                    while Udyam still carries the previous address.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="address-comparison">
+                                        <div class="address-column">
+                                            <span class="address-column-title">
+                                                Registered / historic
+                                            </span>
+
+                                            <div class="address-main">
+                                                <strong>Previous Malad address</strong>
+                                                <span>Udyam Registration</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="address-arrow">
+                                            <lightning-icon
+                                                icon-name="utility:forward"
+                                                size="small">
+                                            </lightning-icon>
+                                        </div>
+
+                                        <div class="address-column address-column--current">
+                                            <span class="address-column-title">
+                                                Current operating address
+                                            </span>
+
+                                            <div class="address-main">
+                                                <strong>Kandivali East</strong>
+                                                <span>Customer confirmed</span>
+                                            </div>
+
+                                            <div class="evidence-chips">
+                                                <span>
+                                                    <lightning-icon
+                                                        icon-name="utility:attach"
+                                                        size="xx-small">
+                                                    </lightning-icon>
+                                                    Current Lease
+                                                </span>
+
+                                                <span>
+                                                    <lightning-icon
+                                                        icon-name="utility:attach"
+                                                        size="xx-small">
+                                                    </lightning-icon>
+                                                    Utility Bill
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="document-exception-row">
+                                        <div>
+                                            <span class="exception-label">Required document</span>
+                                            <strong>Shop &amp; Establishment Certificate</strong>
+                                            <span>Customer indicated this document is not available.</span>
+                                        </div>
+
+                                        <div class="exception-arrow">
+                                            <lightning-icon
+                                                icon-name="utility:forward"
+                                                size="x-small">
+                                            </lightning-icon>
+                                        </div>
+
+                                        <div>
+                                            <span class="exception-label">Policy-based alternate</span>
+                                            <strong>Lease + Utility Bill</strong>
+                                            <span>Received and linked to the exception.</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="recommendation-banner">
+                                        <div class="recommendation-banner-icon">
+                                            <lightning-icon
+                                                icon-name="utility:einstein"
+                                                size="small">
+                                            </lightning-icon>
+                                        </div>
+
+                                        <div>
+                                            <span>AVA recommendation</span>
+                                            <p>
+                                                Current operating address is supported by two current documents.
+                                                Approve the alternate operating-proof exception and retain the
+                                                Udyam-address difference for follow-up as per policy.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <template if:false={addressResolved}>
+                                        <div class="address-actions">
+                                            <lightning-button
+                                                label="Approve Alternate Documents"
+                                                icon-name="utility:check"
+                                                variant="brand"
+                                                onclick={handleApproveAlternate}>
+                                            </lightning-button>
+
+                                            <lightning-button
+                                                label="Request Original Document"
+                                                icon-name="utility:email"
+                                                variant="neutral"
+                                                onclick={handleRequestOriginal}>
+                                            </lightning-button>
+                                        </div>
+                                    </template>
+
+                                    <template if:true={addressResolved}>
+                                        <div class="resolved-action-record">
+                                            <div class="resolved-action-icon">
+                                                <lightning-icon
+                                                    icon-name="utility:check"
+                                                    size="xx-small">
+                                                </lightning-icon>
+                                            </div>
+
+                                            <div>
+                                                <span class="resolved-action-label">
+                                                    RM decision
+                                                </span>
+                                                <strong>Alternate operating-address evidence approved</strong>
+                                                <p>
+                                                    Current lease and utility bill accepted for onboarding.
+                                                    Udyam address difference retained for follow-up.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </article>
+                            </div>
+
+                            <!-- RESOLVED RM ACTIONS -->
+                            <template if:true={hasResolvedRmActions}>
+                                <div class="resolved-rm-actions">
+                                    <div class="subsection-heading">
+                                        <div>
+                                            <span class="subsection-kicker">
+                                                Completed RM actions
+                                            </span>
+                                            <h3>Decision history</h3>
+                                        </div>
+                                    </div>
+
+                                    <div class="resolved-rm-list">
+                                        <template if:true={facilityResolved}>
+                                            <div class="resolved-rm-row">
+                                                <lightning-icon
+                                                    icon-name="utility:check"
+                                                    size="xx-small">
+                                                </lightning-icon>
+                                                <div>
+                                                    <strong>Facility confirmed: {selectedFacility}</strong>
+                                                    <span>RM decision · Added to application</span>
+                                                </div>
+                                            </div>
+                                        </template>
+
+                                        <template if:true={addressResolved}>
+                                            <div class="resolved-rm-row">
+                                                <lightning-icon
+                                                    icon-name="utility:check"
+                                                    size="xx-small">
+                                                </lightning-icon>
+                                                <div>
+                                                    <strong>Alternate operating proof approved</strong>
+                                                    <span>
+                                                        Lease + utility bill accepted · Udyam address retained for follow-up
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- READY TO GENERATE -->
+                            <template if:true={allRmActionsResolved}>
+                                <div class="ready-to-submit-card">
+                                    <div class="ready-to-submit-left">
+                                        <div class="ready-status-icon">
+                                            <lightning-icon
+                                                icon-name="utility:check"
+                                                size="small">
+                                            </lightning-icon>
+                                        </div>
+
+                                        <div>
+                                            <span class="ready-kicker">
+                                                Onboarding complete
+                                            </span>
+                                            <h3>Ready to generate the application</h3>
+                                            <p>
+                                                Customer onboarding, validation and RM review are complete.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="ready-to-submit-actions">
+                                        <template if:false={applicationGenerated}>
+                                            <lightning-button
+                                                label="Generate Application Form"
+                                                icon-name="utility:document"
+                                                variant="brand"
+                                                onclick={handleGenerateApplication}>
+                                            </lightning-button>
+                                        </template>
+
+                                        <template if:true={applicationGenerated}>
+                                            <lightning-button
+                                                label="Preview Application"
+                                                icon-name="utility:preview"
+                                                variant="neutral"
+                                                onclick={handlePreviewApplication}>
+                                            </lightning-button>
+
+                                            <lightning-button
+                                                label="Submit Application"
+                                                icon-name="utility:forward"
+                                                variant="brand"
+                                                onclick={handleSubmitApplication}>
+                                            </lightning-button>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+
+                        </template>
+                    </section>
+                </template>
+            </main>
+
+            <!-- =====================================================
+                 RIGHT - AVA AGENT CONSOLE
+            ====================================================== -->
+            <aside class="ava-console">
+
+                <div class="ava-console-header">
+                    <div class="ava-brand-block">
+                        <div class="ava-avatar">
+                            <lightning-icon
+                                icon-name="utility:einstein"
+                                size="medium"
+                                alternative-text="AVA">
+                            </lightning-icon>
+                        </div>
+
+                        <div>
+                            <div class="ava-name-line">
+                                <h2>AVA</h2>
+                                <span class="ava-live-dot"></span>
+                                <span class="ava-live-text">Active</span>
+                            </div>
+
+                            <p>Onboarding Agent</p>
+                        </div>
+                    </div>
+
+                    <span class={avaStateBadgeClass}>
+                        {avaStateBadge}
+                    </span>
+                </div>
+
+                <!-- CURRENT ACTIVITY -->
+                <section class="ava-module ava-module--current">
+                    <div class="ava-module-heading">
+                        <div class="ava-module-title">
+                            <span class="ava-module-icon">
+                                <lightning-icon
+                                    icon-name="utility:activity"
+                                    size="x-small">
+                                </lightning-icon>
+                            </span>
+
+                            <span>Current activity</span>
+                        </div>
+
+                        <span class="module-status module-status--live">Live</span>
+                    </div>
+
+                    <h3>{avaCurrentTitle}</h3>
+                    <p>{avaCurrentText}</p>
+                </section>
+
+                <!-- WAITING ON -->
+                <section class="ava-module">
+                    <div class="ava-module-heading">
+                        <div class="ava-module-title">
+                            <span class="ava-module-icon">
+                                <lightning-icon
+                                    icon-name="utility:clock"
+                                    size="x-small">
+                                </lightning-icon>
+                            </span>
+
+                            <span>Waiting on</span>
+                        </div>
+
+                        <span class={waitingBadgeClass}>
+                            {waitingBadge}
+                        </span>
+                    </div>
+
+                    <div class={waitingCardClass}>
+                        <div class="waiting-card-icon">
+                            <lightning-icon
+                                icon-name={waitingIcon}
+                                size="small">
+                            </lightning-icon>
+                        </div>
+
+                        <div>
+                            <strong>{waitingTitle}</strong>
+                            <p>{waitingText}</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ACTIVITY TIMELINE -->
+                <section class="ava-module ava-module--timeline">
+                    <div class="ava-module-heading">
+                        <div class="ava-module-title">
+                            <span class="ava-module-icon">
+                                <lightning-icon
+                                    icon-name="utility:list"
+                                    size="x-small">
+                                </lightning-icon>
+                            </span>
+
+                            <span>Activity timeline</span>
+                        </div>
+
+                        <span class="activity-count">
+                            {activityLogs.length} events
+                        </span>
+                    </div>
+
+                    <div class="timeline-scroll">
+                        <div class="activity-timeline">
+                            <template for:each={activityLogs} for:item="item">
+                                <article key={item.id} class="timeline-event">
+                                    <div class="timeline-track">
+                                        <span class={item.markerClass}>
+                                            <lightning-icon
+                                                icon-name={item.icon}
+                                                size="xx-small">
+                                            </lightning-icon>
+                                        </span>
+
+                                        <span class="timeline-rail"></span>
+                                    </div>
+
+                                    <div class="timeline-event-copy">
+                                        <div class="timeline-event-head">
+                                            <strong>{item.title}</strong>
+                                            <span>{item.time}</span>
+                                        </div>
+
+                                        <p>{item.text}</p>
+
+                                        <template if:true={item.tag}>
+                                            <span class={item.tagClass}>
+                                                {item.tag}
+                                            </span>
+                                        </template>
+                                    </div>
+                                </article>
+                            </template>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- AVA INTELLIGENCE -->
+                <section class="ava-module ava-module--intelligence">
+                    <div class="ava-module-heading">
+                        <div class="ava-module-title">
+                            <span class="ava-module-icon">
+                                <lightning-icon
+                                    icon-name="utility:einstein"
+                                    size="x-small">
+                                </lightning-icon>
+                            </span>
+
+                            <span>AVA intelligence</span>
+                        </div>
+
+                        <span class="intelligence-count">
+                            {avaInsights.length} insights
+                        </span>
+                    </div>
+
+                    <div class="intelligence-list">
+                        <template for:each={avaInsights} for:item="insight">
+                            <article key={insight.id} class={insight.cssClass}>
+                                <span class="intelligence-icon">
+                                    <lightning-icon
+                                        icon-name={insight.icon}
+                                        size="x-small">
+                                    </lightning-icon>
+                                </span>
+
+                                <div>
+                                    <div class="insight-title-row">
+                                        <strong>{insight.title}</strong>
+                                        <template if:true={insight.badge}>
+                                            <span class={insight.badgeClass}>
+                                                {insight.badge}
+                                            </span>
+                                        </template>
+                                    </div>
+
+                                    <p>{insight.text}</p>
+                                </div>
+                            </article>
+                        </template>
+                    </div>
+                </section>
+
+            </aside>
+        </div>
+    </div>
+</template>
