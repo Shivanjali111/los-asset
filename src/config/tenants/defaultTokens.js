@@ -1,0 +1,52 @@
+/**
+ * DESIGN TOKENS: named appearance values shared by the dashboard UI.
+ * Example: primary becomes the CSS variable --theme-primary through themeVariables().
+ * The dashboard stylesheet uses those variables for buttons, cards, charts and gradients.
+ * Change the related primary shades together when introducing a new bank palette.
+ */
+export const defaultTokens = {
+  primary: "#00518f",
+  "primary-dark": "#003b69",
+  "primary-hover": "#004373",
+  "primary-deep": "#002642",
+  "primary-mid": "#0875b5",
+  "primary-alt": "#1a4d8a",
+  "primary-light": "#eaf4f9",
+  "primary-tint": "#f3f8fb",
+  "primary-border": "#d6eaf4",
+  secondary: "#c4261d",
+  "secondary-dark": "#971b15",
+  "danger-soft": "#fceae8",
+  "danger-surface": "#fff4f3",
+  "danger-on-dark": "#ffaba5",
+  "danger-light": "#ffd8d4",
+  text: "#14212b",
+  "text-muted": "#5e6f7b",
+  "text-soft": "#8a9aa5",
+  surface: "#ffffff",
+  black: "#000",
+  background: "#f4f7f9",
+  "surface-hover": "#fbfdfe",
+  "surface-subtle": "#f5f9fb",
+  "surface-muted": "#f1f5f9",
+  border: "#d8e2e8",
+  "border-soft": "#e7edf1",
+  "border-strong": "#b9cbd6",
+  success: "#1f8a4c",
+  "success-soft": "#eaf7ef",
+  "success-on-dark": "#8ee0ad",
+  "gold-dark": "#a97412",
+  gold: "#e3aa32",
+  "gold-bright": "#f7cd68",
+  "gold-mid": "#efc65f",
+  "gold-text": "#5e4200",
+  "gold-text-muted": "#76500d",
+  "gold-soft": "#fff5d8",
+  "gold-light": "#ffe7a5",
+  "gold-pale": "#fff0bd",
+  "gold-surface": "#fff4d3",
+  "shadow-color": "#003054",
+  "font-family":
+    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Helvetica, Arial, sans-serif",
+  "radius-card": "20px",
+};

@@ -1,0 +1,106 @@
+{
+  "id": "gold-dashboard-demo",
+  "branch": { "id": "pune-camp", "name": "Pune Camp Branch" },
+  "summary": {
+    "processed": 42,
+    "fresh": 30,
+    "renewals": 12,
+    "disbursedRupees": 18600000,
+    "averageMinutes": 13,
+    "withinSlaPercent": 88,
+    "slaMinutes": 15,
+    "slaTargetPercent": 85,
+    "attentionCount": 5
+  },
+  "snapshot": [
+    {
+      "id": "appraisal",
+      "label": "In appraisal",
+      "value": 3,
+      "tone": "appraisal"
+    },
+    {
+      "id": "sanction",
+      "label": "Awaiting sanction",
+      "value": 2,
+      "tone": "checker"
+    },
+    {
+      "id": "processed",
+      "label": "Processed today",
+      "value": 42,
+      "tone": "disbursed"
+    }
+  ],
+  "sources": [
+    {
+      "id": "branch",
+      "label": "Branch Walk-in",
+      "count": 25,
+      "icon": "branch"
+    },
+    { "id": "referral", "label": "RM Referral", "count": 11, "icon": "person" },
+    { "id": "broker", "label": "Gold Broker", "count": 6, "icon": "broker" }
+  ],
+  "loanTypes": [
+    {
+      "id": "fresh",
+      "label": "Fresh",
+      "count": 30,
+      "color": "primary",
+      "tone": "completed"
+    },
+    {
+      "id": "renewal",
+      "label": "Renewal",
+      "count": 12,
+      "color": "gold-dark",
+      "tone": "pending"
+    }
+  ],
+  "trend": {
+    "period": "August",
+    "items": [
+      { "id": "week-1", "label": "Week 1", "value": 198 },
+      { "id": "week-2", "label": "Week 2", "value": 214 },
+      { "id": "week-3", "label": "Week 3", "value": 236 },
+      { "id": "week-4", "label": "Week 4", "value": 188 }
+    ]
+  },
+  "watchlist": [
+    { "id": "elapsed", "label": "Cases above 12 minutes", "value": 3 },
+    { "id": "appraiser", "label": "Awaiting appraiser action", "value": 2 },
+    { "id": "checker", "label": "Awaiting checker sanction", "value": 2 },
+    { "id": "renewal-due", "label": "Renewals due today", "value": 4 }
+  ],
+  "activities": [
+    {
+      "id": "event-1",
+      "title": "Fresh gold loan disbursed",
+      "subtitle": "₹4.80 lakh disbursed for GL-2026-01853 in 11 minutes.",
+      "time": "12 min ago",
+      "icon": "check"
+    },
+    {
+      "id": "event-2",
+      "title": "Jewellery appraisal completed",
+      "subtitle": "Net eligible gold weight recorded for GL-2026-01851.",
+      "time": "38 min ago",
+      "icon": "gold-loan"
+    },
+    {
+      "id": "event-3",
+      "title": "Gold loan renewed",
+      "subtitle": "Renewal completed for GL-2025-00982 in 8 minutes.",
+      "time": "1 hr ago",
+      "icon": "refresh"
+    },
+    {
+      "id": "event-4",
+      "title": "Sanction approved by checker",
+      "subtitle": "GL-2026-01848 is ready for disbursement.",
+      "time": "2 hrs ago",
+      "icon": "sanction"
+    }
+  ]
+}

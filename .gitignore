@@ -1,3 +1,4 @@
 node_modules/
+dist/
 # Codify AI plans (auto-generated, do not commit)
 .codify/

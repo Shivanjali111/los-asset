@@ -1,9 +1,16 @@
+/**
+ * EXISTING APPLICATION ROOT: starts session restoration and defines the current routes.
+ * Dashboard migration touchpoints: imports pages/Dashboard and initializes legacy leads via a repository.
+ * Passes leads/onCreateLead/onLogout into DashboardPage; successful creation updates this lead list.
+ * Other routes and existing authentication behavior are retained during the incremental refactor.
+ */
 import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { getCurrentUser, fetchAuthSession, signOut } from "aws-amplify/auth";
 
 import LoginPage from "./pages/LoginPage";
-import DashboardPage from "./pages/DashboardPage";
+import DashboardPage from "./pages/Dashboard/DashboardPage";
+import { mockLeadRepository } from "./features/lead/repositories/mockLeadRepository";
 import LeadDetailPage from "./pages/LeadDetailPage";
 import ConsentLandingPage from "./pages/ConsentLandingPage";
 import ApplicationOnboardingPage from "./pages/application/ApplicationOnboardingPage";
@@ -12,63 +19,7 @@ import ApplicationDetailPage from "./pages/application/ApplicationDetailPage";
 import "./styles/theme.css";
 import "./index.css";
 
-const initialLeads = [
-  {
-    id: "LD-10021",
-    firstName: "Rahul",
-    lastName: "Sharma",
-    mobile: "9876543210",
-    product: "Home Loan",
-    source: "Website",
-    status: "New",
-    owner: "Amit Singh",
-    createdDate: "04 May 2026",
-  },
-  {
-    id: "LD-10022",
-    firstName: "Priya",
-    lastName: "Mehta",
-    mobile: "9876501234",
-    product: "Loan Against Property",
-    source: "Mobile App",
-    status: "In Progress",
-    owner: "Neha Jain",
-    createdDate: "04 May 2026",
-  },
-  {
-    id: "LD-10023",
-    firstName: "Amit",
-    lastName: "Verma",
-    mobile: "9988776655",
-    product: "Working Capital",
-    source: "Branch Walk-in",
-    status: "Converted",
-    owner: "Rohan Mehta",
-    createdDate: "03 May 2026",
-  },
-  {
-    id: "LD-10024",
-    firstName: "Sneha",
-    lastName: "Iyer",
-    mobile: "9123456780",
-    product: "Home Loan",
-    source: "Digital Aggregator",
-    status: "Disqualified",
-    owner: "Contact Center",
-    createdDate: "03 May 2026",
-  },
-  {
-    id: "LD-10025",
-    firstName: "Vikram",
-    lastName: "Rao",
-    mobile: "9090909090",
-    product: "Business Loan",
-    source: "Outbound Call",
-    status: "New",
-    owner: "Contact Center",
-    createdDate: "02 May 2026",
-  },
-];
+
 
 function AuthLoader() {
   return (
@@ -94,7 +45,7 @@ function PrivateRoute({ user, children }) {
 function App() {
   const [authChecking, setAuthChecking] = useState(true);
   const [user, setUser] = useState(null);
-  const [leads, setLeads] = useState(initialLeads);
+  const [leads, setLeads] = useState(() => mockLeadRepository.getSnapshot());
 
   const checkAuthSession = async () => {
     try {
