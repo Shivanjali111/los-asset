@@ -537,7 +537,7 @@ const buildView = (leadDetails, lead) => {
     charges: calculatedCharges,
     nominee: {
       addToSavingsAccount: Boolean(nominee.addToSavingsAccount),
-      name: nominee.name || "Anita Sharma",
+      name: nominee.name || "Atharva",
       relationship: nominee.relationship || "Spouse",
       dateOfBirth: nominee.dateOfBirth || "1988-07-18",
       address: nominee.address || "Baner Road, Pune, Maharashtra 411045",
@@ -1935,7 +1935,7 @@ export default function ApplicationDetailsTab({
                   </div>
                 </div>
               ))}
-              {makerDraft.nominees.length < 1 && <button className="add-nominee" type="button" onClick={() => setMakerDraft((current) => ({ ...current, nominees: [...current.nominees, { name: "", relationship: "" }] }))}>+ Add a second nominee</button>}
+              {makerDraft.nominees.length < 1 && <button className="add-nominee" type="button" onClick={() => setMakerDraft((current) => ({ ...current, nominees: [...current.nominees, { name: "Shravani", relationship: "" }] }))}>+ Add a second nominee</button>}
 
               <label className="details-checkbox nominee-savings-checkbox">
                 <input
